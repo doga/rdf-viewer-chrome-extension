@@ -51,7 +51,7 @@ chrome.runtime.onMessage.addListener(async (request, _sender, sendResponse) => {
  * for the content script to display.
  * @param {{rdf: string}} args 
  * @throws {TypeError}
- * @returns {Object}
+ * @returns {({documentType: 'unknown'} | {documentType: 'ontology', ontologyType: string, ?title: string, ?description: string, vann: {prefix: string, iri: string}, prefixes: Object.<string, string>, classes: {?label: string, iri: string, ?description: string}[], predicates: {?label: string, iri: string, ?description: string}[], datatypes: {?label: string, iri: string, ?description: string}[]})}
  * @async
  */
 async function getViewModel(args) {
@@ -75,18 +75,40 @@ async function getViewModel(args) {
     /** @type {string} */
     vannPrefix, 
     /** @type {string} */
-    vannUri;
+    vannUri,
+    /** @type {string} */
+    ontologyTitle,
+    /** @type {string} */
+    ontologyDescription,
+    /** @type {string} */
+    ontologyIri;
 
     for (const quad of vannPrefixDs) {
       vannPrefix = quad.object.value;
+      ontologyIri = quad.subject.value;
     }
     for (const quad of vannUriDs) {
+      if(ontologyIri !== quad.subject.value)ontologyIri = null; // only one ontology!
       vannUri = quad.object.value;
+
+      // ontology title
+      for (const q of dataset.match(quad.subject, t.namedNode(`${rdfs}label`))) {
+        ontologyTitle = q.object.value.trim();
+      }
+
+      // ontology description
+      for (const q of dataset.match(quad.subject, t.namedNode(`${rdfs}comment`))) {
+        ontologyDescription = q.object.value.trim();
+      }
     }
+    console.debug(`is ontology`, ontologyIri);
+    console.debug(`title`, ontologyTitle);
+    console.debug(`description`, ontologyDescription);
+    if(!ontologyIri)return { documentType: 'unknown' };
 
     const viewModel = getViewModelForOntology(
       dataset, 
-      {prefixes, vann: {prefix: vannPrefix, iri: vannUri}}
+      {title: ontologyTitle, description: ontologyDescription, prefixes, vann: {prefix: vannPrefix, iri: vannUri}}
     );
     viewModel.documentType = 'ontology';
 
@@ -100,17 +122,17 @@ async function getViewModel(args) {
 /**
  * Returns an ontology view model.
  * @param {Object} dataset
- * @param {{vann: {prefix: string, iri: string}, prefixes: Object.<string, string>}} meta
+ * @param {?title: string, ?description: string, {vann: {prefix: string, iri: string}, prefixes: Object.<string, string>}} meta
  * @throws {TypeError}
- * @returns {{ontologyType: string, ?title: string, ?description: string, vann: {prefix: string, iri: string}, prefixes: Object.<string, string>, classes: {iri: string, ?description: string}[], predicates: {iri: string, ?description: string}[], datatypes: {iri: string, ?description: string}[]}}
+ * @returns {{ontologyType: string, ?title: string, ?description: string, vann: {prefix: string, iri: string}, prefixes: Object.<string, string>, classes: {?label: string, iri: string, ?description: string}[], predicates: {?label: string, iri: string, ?description: string}[], datatypes: {?label: string, iri: string, ?description: string}[]}}
  * @async
  */
 function getViewModelForOntology(dataset, meta) {
   const
   viewModel = {
     ontologyType: 'rdfs', // owl
-    title       : null,
-    description : null,
+    title       : meta.title,
+    description : meta.description,
     vann        : meta.vann,
     prefixes    : meta.prefixes,
     classes     : [],
@@ -120,18 +142,30 @@ function getViewModelForOntology(dataset, meta) {
 
   /** @see {@link https://rdf.js.org/dataset-spec/#dataset-interface | Dataset interface} */
   classesDs = dataset.match(null, t.namedNode(`${rdf}type`), t.namedNode(`${rdfs}Class`)),
+  
+  /** @see {@link https://rdf.js.org/dataset-spec/#dataset-interface | Dataset interface} */
+  predicatesDs = dataset.match(null, t.namedNode(`${rdf}type`), t.namedNode(`${rdf}Property`)),
 
   /** @see {@link https://rdf.js.org/dataset-spec/#dataset-interface | Dataset interface} */
-  propertiesDs = dataset.match(null, t.namedNode(`${rdf}type`), t.namedNode(`${rdf}Property`));
+  datatypesDs = dataset.match(null, t.namedNode(`${rdf}type`), t.namedNode(`${rdfs}Datatype`));
 
-  for (const quad of classesDs) {
-    viewModel.classes.push({iri: quad.subject.value});
-  }
-
-  for (const quad of propertiesDs) {
-    viewModel.predicates.push({iri: quad.subject.value});
-  }
-
+  const mvs = [viewModel.classes, viewModel.predicates, viewModel.datatypes];
+  [classesDs, predicatesDs, datatypesDs].forEach(
+    ds => {
+      const mv = mvs.shift();
+      for (const quad of ds) {
+        const iri = quad.subject.value;
+        let label, description;
+        for (const q of dataset.match(quad.subject, t.namedNode(`${rdfs}label`))) {
+          label = q.object.value;
+        }
+        for (const q of dataset.match(quad.subject, t.namedNode(`${rdfs}comment`))) {
+          description = q.object.value;
+        }
+        mv.push({iri, label, description});
+      }
+    }
+  );
 
   return viewModel;
 }

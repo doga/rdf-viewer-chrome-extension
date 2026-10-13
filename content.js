@@ -25,7 +25,7 @@ async function showHumanReadableRdf(rdf) {
   },
   response = await chrome.runtime.sendMessage(request);
 
-  // console.debug(`response`, response);
+  console.debug(`response`, response);
   if (!ok(response))return;
   if (response.body.documentType !== 'ontology')return;
 
@@ -65,8 +65,8 @@ function showHumanReadableOntology(viewModel) {
       tableBody: document.querySelector('.ontology-section:nth-child(5) .entity-table tbody'),
     },
   };
-  ui.title.innerText            = 'No title';
-  ui.description.innerText      = 'No description';
+  ui.title.innerText            = viewModel.title ?? 'An RDF Ontology';
+  ui.description.innerText      = viewModel.description ?? 'No description';
   ui.vann.prefix.innerText      = viewModel.vann.prefix;
   ui.vann.iri.innerText         = viewModel.vann.iri;
   ui.prefixes.badge.innerText   = Object.entries(viewModel.prefixes).length;
@@ -76,6 +76,7 @@ function showHumanReadableOntology(viewModel) {
 
   // console.debug('ui', ui);
 
+  // display prefixes
   for (const [prefix, iri] of Object.entries(viewModel.prefixes)) {
     // console.debug(prefix, '→', iri);
     // console.debug(ui.prefixes);
@@ -83,19 +84,64 @@ function showHumanReadableOntology(viewModel) {
     ui.prefixes.tableBody.append(entry);
     entry.innerHTML = `
       <td>
-        <strong></strong> <!-- <span class="badge-vann"></span> -->
+        <strong></strong>
       </td>
       <td class="entity-iri"></td>
     `;
     const 
     ui2 = {
-      prefix   : entry.querySelector('strong'),
-      iri      : entry.querySelector('.entity-iri'),
-      // vannBadge: entry.querySelector('.badge-vann'),
+      prefix: entry.querySelector('strong'),
+      iri   : entry.querySelector('.entity-iri'),
     };
     ui2.prefix.innerText = prefix;
     ui2.iri.innerText = iri;
   }
+
+
+  // display classes, predicates and datatypes
+  const uis = [ui.classes, ui.predicates, ui.datatypes];
+  [viewModel.classes, viewModel.predicates, viewModel.datatypes].forEach(
+    definitions => {
+      const currentUi = uis.shift();
+      for (const def of definitions) {
+        const entry = document.createElement('tr');
+        currentUi.tableBody.append(entry);
+        entry.innerHTML = `
+          <td>
+            <strong></strong><br/>
+            <span class="entity-iri"></span>
+          </td>
+          <td></td>
+        `;
+        const 
+        ui2 = {
+          label      : entry.querySelector('strong'),
+          iri        : entry.querySelector('.entity-iri'),
+          description: entry.querySelector('td:nth-child(2)')
+        };
+        ui2.iri.innerText = prefixedIri(def.iri, viewModel.prefixes);
+        if(def.label)ui2.label.innerText = def.label;
+        if(def.description)ui2.description.innerText = def.description;
+      }
+    }
+  );
+
+}
+
+
+/**
+ * 
+ * @param {string} iri 
+ * @param {Object.<string, string>} prefixes 
+ * @return {string}
+ */
+function prefixedIri(iri, prefixes) {
+  for (const [prefix, prefixIri] of Object.entries(prefixes)) {
+    if (iri.startsWith(prefixIri)) {
+      return `${prefix}:${iri.substring(prefixIri.length)}`;
+    }
+  }
+  return iri;
 }
 
 
@@ -273,7 +319,7 @@ function emptyOntologyPage() {
           <h2>Predicates / Properties <span class="badge"></span></h2>
           <table class="entity-table">
             <thead>
-              <tr><th>Predicate / IRI</th><th>Description (rdfs:comment)</th></tr>
+              <tr><th>Predicate / IRI</th><th>Description</th></tr>
             </thead>
             <tbody>
               <!--
