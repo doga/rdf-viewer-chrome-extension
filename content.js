@@ -1,3 +1,9 @@
+/**
+ * The untouched initial document
+ * @type {string}
+ */
+const rawText = document.body ? document.body.innerText : "";
+// if (!rawText.trim()) return;
 
 if (isRdf(document.contentType)) showHumanReadableRdf(document.body.innerText);
 

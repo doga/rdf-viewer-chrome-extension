@@ -106,7 +106,8 @@ async function getViewModel(args) {
  * @async
  */
 function getViewModelForOntology(dataset, meta) {
-  const viewModel = {
+  const
+  viewModel = {
     ontologyType: 'rdfs', // owl
     title       : null,
     description : null,
@@ -115,7 +116,23 @@ function getViewModelForOntology(dataset, meta) {
     classes     : [],
     predicates  : [],
     datatypes   : []
-  };
+  },
+
+  /** @see {@link https://rdf.js.org/dataset-spec/#dataset-interface | Dataset interface} */
+  classesDs = dataset.match(null, t.namedNode(`${rdf}type`), t.namedNode(`${rdfs}Class`)),
+
+  /** @see {@link https://rdf.js.org/dataset-spec/#dataset-interface | Dataset interface} */
+  propertiesDs = dataset.match(null, t.namedNode(`${rdf}type`), t.namedNode(`${rdf}Property`));
+
+  for (const quad of classesDs) {
+    viewModel.classes.push({iri: quad.subject.value});
+  }
+
+  for (const quad of propertiesDs) {
+    viewModel.predicates.push({iri: quad.subject.value});
+  }
+
+
   return viewModel;
 }
 
