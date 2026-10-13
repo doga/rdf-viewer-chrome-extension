@@ -1,0 +1,37 @@
+{
+  "manifest_version": 3,
+  "name": "RDF Viewer",
+  "version": "1.0",
+  "description": "Displays RDF documents as human-readable HTML documents.",
+  "permissions": [
+    "activeTab",
+    "webNavigation"
+  ],
+  "host_permissions": [
+    "http://*/*",
+    "https://*/*",
+    "file://*/*"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type"          : "module"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "http://*/*",
+        "https://*/*",
+        "file://*/*"
+      ],
+      "js": ["content.js"],
+      "css": ["assets/styles/extension-styles.css"],
+      "run_at": "document_idle"
+    }
+  ],
+  "icons": {
+    "16" : "/assets/images/icons/semantic-web-logo-16px.png",
+    "32" : "/assets/images/icons/semantic-web-logo-32px.png",
+    "48" : "/assets/images/icons/semantic-web-logo-48px.png",
+    "128": "/assets/images/icons/semantic-web-logo-128px.png"
+  }
+}
