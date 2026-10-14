@@ -45,6 +45,7 @@ function showHumanReadableOntology(viewModel) {
     title      : document.querySelector('.ontology-header > h1'),
     description: document.querySelector('.ontology-header > p'),
     vann: {
+      all:  document.querySelector('#vann'),
       prefix: document.querySelector('.vann-prefix'),
       iri   : document.querySelector('.vann-iri'),
     },
@@ -65,6 +66,7 @@ function showHumanReadableOntology(viewModel) {
       tableBody: document.querySelector('.ontology-section:nth-child(5) .entity-table tbody'),
     },
   };
+  ui.vann.all.classList.remove('hide');
   ui.title.innerText            = viewModel.title ?? 'An RDF Ontology';
   ui.description.innerText      = viewModel.description ?? 'No description';
   ui.vann.prefix.innerText      = viewModel.vann.prefix;
@@ -139,7 +141,7 @@ function showHumanReadableOntology(viewModel) {
             title = document.createElement('em');
             title.innerText = 'Domain: ';
             p.append(title);
-            
+
             for (const iri of def.domain) {
               const iriSpan = document.createElement('span');
               iriSpan.classList.add('entity-iri');
@@ -194,6 +196,7 @@ function emptyOntologyPage() {
   // console.debug(`page init`);
   const styleTag = document.createElement('style');
   styleTag.textContent = `
+    hide {display: none;}
     body.ontology-body {
       background-color: #f8fafc;
       color: #0f172a;
@@ -312,7 +315,7 @@ function emptyOntologyPage() {
       <div class="ontology-header">
         <h1></h1>
         <p></p>
-        <div class="vann-meta">
+        <div id='vann' class="vann-meta hide">
           <span><strong>Preferred Prefix:</strong> <code class='vann-prefix'></code></span>
           <span><strong>Preferred Namespace:</strong> <code class='vann-iri'></code></span>
         </div>
