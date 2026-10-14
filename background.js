@@ -51,7 +51,7 @@ chrome.runtime.onMessage.addListener(async (request, _sender, sendResponse) => {
  * for the content script to display.
  * @param {{rdf: string}} args 
  * @throws {TypeError}
- * @returns {({documentType: 'unknown'} | {documentType: 'ontology', ontologyType: string, ?title: string, ?description: string, vann: {prefix: string, iri: string}, prefixes: Object.<string, string>, classes: {?label: string, iri: string, ?description: string}[], predicates: {?label: string, iri: string, ?description: string}[], datatypes: {?label: string, iri: string, ?description: string}[]})}
+ * @returns {({documentType: 'unknown'} | {documentType: 'ontology', ontologyType: string, ?title: string, ?description: string, vann: {prefix: string, iri: string}, prefixes: Object.<string, string>, classes: {?label: string, iri: string, ?description: string}[], predicates: {?label: string, iri: string, ?description: string, domain: string[], range: string[]}[], datatypes: {?label: string, iri: string, ?description: string}[]})}
  * @async
  */
 async function getViewModel(args) {
@@ -124,7 +124,7 @@ async function getViewModel(args) {
  * @param {Object} dataset
  * @param {?title: string, ?description: string, {vann: {prefix: string, iri: string}, prefixes: Object.<string, string>}} meta
  * @throws {TypeError}
- * @returns {{ontologyType: string, ?title: string, ?description: string, vann: {prefix: string, iri: string}, prefixes: Object.<string, string>, classes: {?label: string, iri: string, ?description: string}[], predicates: {?label: string, iri: string, ?description: string}[], datatypes: {?label: string, iri: string, ?description: string}[]}}
+ * @returns {{ontologyType: string, ?title: string, ?description: string, vann: {prefix: string, iri: string}, prefixes: Object.<string, string>, classes: {?label: string, iri: string, ?description: string}[], predicates: {?label: string, iri: string, ?description: string, domain: string[], range: string[]}[], datatypes: {?label: string, iri: string, ?description: string}[]}}
  * @async
  */
 function getViewModelForOntology(dataset, meta) {
@@ -149,10 +149,11 @@ function getViewModelForOntology(dataset, meta) {
   /** @see {@link https://rdf.js.org/dataset-spec/#dataset-interface | Dataset interface} */
   datatypesDs = dataset.match(null, t.namedNode(`${rdf}type`), t.namedNode(`${rdfs}Datatype`));
 
-  const mvs = [viewModel.classes, viewModel.predicates, viewModel.datatypes];
+  // labels and descriptions
+  const vms = [viewModel.classes, viewModel.predicates, viewModel.datatypes];
   [classesDs, predicatesDs, datatypesDs].forEach(
     ds => {
-      const mv = mvs.shift();
+      const vm = vms.shift();
       for (const quad of ds) {
         const iri = quad.subject.value;
         let label, description;
@@ -162,10 +163,29 @@ function getViewModelForOntology(dataset, meta) {
         for (const q of dataset.match(quad.subject, t.namedNode(`${rdfs}comment`))) {
           description = q.object.value;
         }
-        mv.push({iri, label, description});
+        vm.push({iri, label, description});
       }
     }
   );
+
+  // predicates: domains and ranges
+  for (const quad of predicatesDs) {
+    const 
+    iri = quad.subject.value,
+    vm  = viewModel.predicates.find(e => e.iri === iri);
+
+    vm.domain = [];
+    vm.range  = [];
+
+    for (const q of dataset.match(quad.subject, t.namedNode(`${rdfs}domain`))) {
+      vm.domain.push(q.object.value);
+    }
+
+    for (const q of dataset.match(quad.subject, t.namedNode(`${rdfs}range`))) {
+      vm.range.push(q.object.value);
+    }
+    
+  }
 
   return viewModel;
 }

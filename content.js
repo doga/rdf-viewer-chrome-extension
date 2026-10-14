@@ -121,11 +121,56 @@ function showHumanReadableOntology(viewModel) {
         };
         ui2.iri.innerText = prefixedIri(def.iri, viewModel.prefixes);
         if(def.label)ui2.label.innerText = def.label;
-        if(def.description)ui2.description.innerText = def.description;
+
+        if (def.description) {
+          const descrP = document.createElement('p');
+          descrP.innerText = def.description;
+          ui2.description.append(descrP);
+        }
+
+        // predicate?
+        if (def.domain && (def.domain.length > 0 || def.range.length > 0)) {
+          // ui2.description.append(document.createElement('br'));
+
+          // display domains
+          if (def.domain.length > 0) {
+            const 
+            p = document.createElement('p'),
+            title = document.createElement('em');
+            title.innerText = 'Domain: ';
+            p.append(title);
+            
+            for (const iri of def.domain) {
+              const iriSpan = document.createElement('span');
+              iriSpan.classList.add('entity-iri');
+              iriSpan.innerText = prefixedIri(iri, viewModel.prefixes);
+              p.append(iriSpan);
+              p.append(document.createTextNode(' '));
+            }
+            ui2.description.append(p);
+          }
+
+          // display ranges
+          if (def.range.length > 0) {
+            const p = document.createElement('p');
+            title = document.createElement('em');
+            title.innerText = 'Range: ';
+            p.append(title);
+
+            for (const iri of def.range) {
+              const iriSpan = document.createElement('span');
+              iriSpan.classList.add('entity-iri');
+              iriSpan.innerText = prefixedIri(iri, viewModel.prefixes);
+              p.append(iriSpan);
+              p.append(document.createTextNode(' '));
+            }
+            ui2.description.append(p);
+          }
+          
+        }
       }
     }
   );
-
 }
 
 
@@ -357,14 +402,14 @@ function emptyOntologyPage() {
         </div>
     </div>
 
-    <button class="toggle-raw-btn" id="toggleRawBtn">View Raw Turtle</button>
+    <button class="toggle-raw-btn" id="toggleRawBtn">View raw</button>
   `;
 
   let showingRaw = false;
   document.getElementById('toggleRawBtn').addEventListener('click', () => {
     showingRaw = !showingRaw;
     if (showingRaw) {
-      document.body.innerHTML = `<pre style="white-space: pre-wrap; word-break: break-all; padding: 20px; font-family: monospace;">${rawText.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre><button class="toggle-raw-btn" id="toggleRawBtn">View Rendered Ontology</button>`;
+      document.body.innerHTML = `<pre style="white-space: pre-wrap; word-break: break-all; padding: 20px; font-family: monospace;">${rawText.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre><button class="toggle-raw-btn" id="toggleRawBtn">View as HTML document</button>`;
       document.getElementById('toggleRawBtn').addEventListener('click', () => location.reload());
     }
   });
