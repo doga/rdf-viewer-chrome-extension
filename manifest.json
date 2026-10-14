@@ -3,15 +3,6 @@
   "name": "RDF Viewer",
   "version": "1.0",
   "description": "Displays RDF documents as human-readable HTML documents.",
-  "permissions": [
-    "activeTab",
-    "webNavigation"
-  ],
-  "host_permissions": [
-    "http://*/*",
-    "https://*/*",
-    "file://*/*"
-  ],
   "background": {
     "service_worker": "background.js",
     "type"          : "module"

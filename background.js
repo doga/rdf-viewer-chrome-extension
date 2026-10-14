@@ -101,9 +101,6 @@ async function getViewModel(args) {
         ontologyDescription = q.object.value.trim();
       }
     }
-    console.debug(`is ontology`, ontologyIri);
-    console.debug(`title`, ontologyTitle);
-    console.debug(`description`, ontologyDescription);
     if(!ontologyIri)return { documentType: 'unknown' };
 
     const viewModel = getViewModelForOntology(
