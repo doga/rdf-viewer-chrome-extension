@@ -7,10 +7,14 @@
 import { Store } from '../pulled-in/N3.js/v2.13.12/n3.esm.min.js';
 import { parseRdf, t, selectUserLiteral } from "../utils/rdf-utils.mjs";
 
+// IRI
+import {IRI, IRL, URN, irl, url, urn, iri} from '../pulled-in/IRI/3.1.6/mod.mjs';
+
+
 const
-rdf  = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
-rdfs = 'http://www.w3.org/2000/01/rdf-schema#',
-vann = 'http://purl.org/vocab/vann/';
+rdf  = iri`http://www.w3.org/1999/02/22-rdf-syntax-ns#`,
+rdfs = iri`http://www.w3.org/2000/01/rdf-schema#`,
+vann = iri`http://purl.org/vocab/vann/`;
 
 
 /**
