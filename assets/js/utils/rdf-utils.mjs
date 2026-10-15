@@ -5,6 +5,9 @@
 
 // N3.js
 import { Parser, DataFactory } from '../pulled-in/N3.js/v2.13.12/n3.esm.min.js';
+import languageTag from '../pulled-in/language/1.2.0/lib/language-tag.mjs';
+
+import { LanguageTag, Language, langTag, lang } from "../pulled-in/language/1.2.0/mod.mjs";
 
 const 
 /** Functions to create RDF statements and terms. */
@@ -75,45 +78,53 @@ async function parseRdf(rdfDocument) {
 function selectUserLiteral(dataset) {
   const 
   /**
+   * @type {{preferred: LanguageTag, all: LanguageTag[]}}
    * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/Navigator/language}
    * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/Navigator/languages}
+   * @see {@link https://github.com/doga/language}
    */
   userLangs = {
-    preferred: navigator.language.toLowerCase(),
-    all      : navigator.languages.map(s => s.toLowerCase())
+    preferred: langTag`${navigator.language}`,
+    all      : navigator.languages.map(s => langTag`${s}`)
   };
 
-  try {
-    // look for the exact preferred language string
+  try { // TODO optimise (langTag computing etc)
+    // find exact preferred language tag
     for (const quad of dataset) {
       if(quad.object.termType !== 'Literal')continue;
-      if(quad.object.language.toLowerCase() !== userLangs.preferred)continue;
+      const literalLang = langTag`${quad.object.language}`;
+      if(!literalLang)continue;
+      if(!literalLang.equals(userLangs.preferred))continue;
       return quad.object;
     }
 
-    // look for the same preferred language code
-    const prefLangCode = userLangs.preferred.split('-')[0];
+    // find same preferred language code
     for (const quad of dataset) {
       if(quad.object.termType !== 'Literal')continue;
-      if(quad.object.language.toLowerCase() !== prefLangCode)continue;
+      const literalLang = langTag`${quad.object.language}`;
+      if(!literalLang)continue;
+      if(!literalLang.code.equals(userLangs.preferred.code))continue;
       return quad.object;
     }
 
-    // look for the exact language string
+    // find same language tag
     for (const lang of userLangs.all) {
       for (const quad of dataset) {
         if(quad.object.termType !== 'Literal')continue;
-        if(quad.object.language.toLowerCase().split('-')[0] !== lang)continue;
+        const literalLang = langTag`${quad.object.language}`;
+        if(!literalLang)continue;
+        if(!literalLang.equals(lang))continue;
         return quad.object;
       }
     }
 
-    // look for the same language code
-    const langCodes = userLangs.all.map(s => s.split('-')[0]);
-    for (const langCode of langCodes) {
+    // find same language code
+    for (const lang of userLangs.all) {
       for (const quad of dataset) {
         if(quad.object.termType !== 'Literal')continue;
-        if(quad.object.language.toLowerCase().split('-')[0] !== langCode)continue;
+        const literalLang = langTag`${quad.object.language}`;
+        if(!literalLang)continue;
+        if(!literalLang.code.equals(lang.code))continue;
         return quad.object;
       }
     }

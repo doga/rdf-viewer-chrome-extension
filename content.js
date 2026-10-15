@@ -25,7 +25,7 @@ async function showHumanReadableRdf(rdf) {
   },
   response = await chrome.runtime.sendMessage(request);
 
-  console.debug(`response`, response);
+  // console.debug(`response`, response);
   if (!ok(response))return;
   if (response.body.documentType !== 'ontology')return;
 

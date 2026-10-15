@@ -6,10 +6,7 @@
 // RDF
 import { Store } from '../pulled-in/N3.js/v2.13.12/n3.esm.min.js';
 import { parseRdf, t, selectUserLiteral } from "../utils/rdf-utils.mjs";
-
-// IRI
 import {IRI, IRL, URN, irl, url, urn, iri} from '../pulled-in/IRI/3.1.6/mod.mjs';
-
 
 const
 rdf  = iri`http://www.w3.org/1999/02/22-rdf-syntax-ns#`,
@@ -27,7 +24,6 @@ vann = iri`http://purl.org/vocab/vann/`;
  * @async
  */
 async function getViewModel(args) {
-  console.debug('args:', args);
   const 
   {rdf}             = args,
   {prefixes, quads} = await parseRdf(rdf),
@@ -41,8 +37,6 @@ async function getViewModel(args) {
 
   /** @see {@link https://rdf.js.org/dataset-spec/#dataset-interface | Dataset interface} */
   vannUriDs = dataset.match(null, t.namedNode(`${vann}preferredNamespaceUri`));
-
-  console.debug('dataset:', dataset);
 
   if ([vannPrefixDs, vannUriDs].every(ds => ds.size === 1)) {
     // ontology
