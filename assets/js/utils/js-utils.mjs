@@ -1,3 +1,7 @@
+/**
+ * JavaScript utilities.
+ * @module jsutil
+ */
 
 function isNull(val) {
   return val === null;
