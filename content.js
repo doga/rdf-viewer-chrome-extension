@@ -309,6 +309,56 @@ function emptyOntologyPage() {
   `;
   document.head.appendChild(styleTag);
 
+  const
+  l10nLangs = ['en'],
+  l10n = {
+    preferredPrefix: {
+      en: 'Preferred Prefix:',
+    },
+    preferredNamespace: {
+      en: 'Preferred Namespace:',
+    },
+    declaredPrefixes: {
+      en: 'Declared Prefixes',
+    },
+    prefix: {
+      en: 'Prefix',
+    },
+    namespaceIri: {
+      en: 'Namespace IRI',
+    },
+    classes: {
+      en: 'Classes',
+    },
+    classNameIri: {
+      en: 'Class Name / IRI',
+    },
+    description: {
+      en: 'Description',
+    },
+    predicates: {
+      en: 'Predicates / Properties',
+    },
+    predicateIri: {
+      en: 'Predicate / IRI',
+    },
+    datatypes: {
+      en: 'Datatypes',
+    },
+    datatypeIri: {
+      en: 'Datatype / IRI',
+    },
+    viewRaw: {
+      en: 'View raw',
+    },
+    viewHtml: {
+      en: 'View as HTML document',
+    },
+  },
+  userLang  = navigator.language.split('-')[0].toLowerCase(),
+  userLangs = navigator.languages.map(l => l.split('-')[0].toLowerCase()),
+  selectedLang = l10nLangs.find(lang => lang === userLang) ?? userLangs.find(uLang => l10nLangs.find(lLang => lLang === uLang)) ?? 'en';
+
   document.body.className = "ontology-body";
   document.body.innerHTML = `
     <div class="ontology-container">
@@ -316,17 +366,17 @@ function emptyOntologyPage() {
         <h1></h1>
         <p></p>
         <div id='vann' class="vann-meta hide">
-          <span><strong>Preferred Prefix:</strong> <code class='vann-prefix'></code></span>
-          <span><strong>Preferred Namespace:</strong> <code class='vann-iri'></code></span>
+          <span><strong>${l10n.preferredPrefix[selectedLang]}</strong> <code class='vann-prefix'></code></span>
+          <span><strong>${l10n.preferredNamespace[selectedLang]}</strong> <code class='vann-iri'></code></span>
         </div>
       </div>
 
       <!-- Prefixes Section -->
       <div class="ontology-section">
-        <h2>Declared <!-- & Inferred --> Prefixes <span class="badge"></span></h2>
+        <h2>${l10n.declaredPrefixes[selectedLang]} <span class="badge"></span></h2>
         <table class="prefix-table">
           <thead>
-            <tr><th>Prefix</th><th>Namespace IRI</th></tr>
+            <tr><th>${l10n.prefix[selectedLang]}</th><th>${l10n.namespaceIri[selectedLang]}</th></tr>
           </thead>
           <tbody>
           <!--
@@ -343,10 +393,10 @@ function emptyOntologyPage() {
 
       <!-- Classes Section -->
       <div class="ontology-section">
-        <h2>Classes <span class="badge"></span></h2>
+        <h2>${l10n.classes[selectedLang]} <span class="badge"></span></h2>
         <table class="entity-table">
           <thead>
-            <tr><th>Class Name / IRI</th><th>Description</th></tr>
+            <tr><th>${l10n.classNameIri[selectedLang]}</th><th>${l10n.description[selectedLang]}</th></tr>
           </thead>
           <tbody>
             <!--
@@ -364,10 +414,10 @@ function emptyOntologyPage() {
 
       <!-- Predicates Section -->
         <div class="ontology-section">
-          <h2>Predicates / Properties <span class="badge"></span></h2>
+          <h2>${l10n.predicates[selectedLang]} <span class="badge"></span></h2>
           <table class="entity-table">
             <thead>
-              <tr><th>Predicate / IRI</th><th>Description</th></tr>
+              <tr><th>${l10n.predicateIri[selectedLang]}</th><th>${l10n.description[selectedLang]}</th></tr>
             </thead>
             <tbody>
               <!--
@@ -385,10 +435,10 @@ function emptyOntologyPage() {
 
       <!-- Datatypes Section -->
         <div class="ontology-section">
-          <h2>Datatypes <span class="badge"></span></h2>
+          <h2>${l10n.datatypes[selectedLang]} <span class="badge"></span></h2>
           <table class="entity-table">
             <thead>
-              <tr><th>Datatype / IRI</th><th>Description</th></tr>
+              <tr><th>${l10n.datatypeIri[selectedLang]}</th><th>Description</th></tr>
             </thead>
             <tbody>
               <!--
@@ -405,14 +455,14 @@ function emptyOntologyPage() {
         </div>
     </div>
 
-    <button class="toggle-raw-btn" id="toggleRawBtn">View raw</button>
+    <button class="toggle-raw-btn" id="toggleRawBtn">${l10n.viewRaw[selectedLang]}</button>
   `;
 
   let showingRaw = false;
   document.getElementById('toggleRawBtn').addEventListener('click', () => {
     showingRaw = !showingRaw;
     if (showingRaw) {
-      document.body.innerHTML = `<pre style="white-space: pre-wrap; word-break: break-all; padding: 20px; font-family: monospace;">${rawText.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre><button class="toggle-raw-btn" id="toggleRawBtn">View as HTML document</button>`;
+      document.body.innerHTML = `<pre style="white-space: pre-wrap; word-break: break-all; padding: 20px; font-family: monospace;">${rawText.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre><button class="toggle-raw-btn" id="toggleRawBtn">${l10n.viewHtml[selectedLang]}</button>`;
       document.getElementById('toggleRawBtn').addEventListener('click', () => location.reload());
     }
   });

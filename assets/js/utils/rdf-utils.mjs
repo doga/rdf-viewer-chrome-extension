@@ -5,9 +5,8 @@
 
 // N3.js
 import { Parser, DataFactory } from '../pulled-in/N3.js/v2.13.12/n3.esm.min.js';
-import languageTag from '../pulled-in/language/1.2.0/lib/language-tag.mjs';
 
-import { LanguageTag, Language, langTag, lang } from "../pulled-in/language/1.2.0/mod.mjs";
+import { LanguageTag, langTag } from "../pulled-in/language/1.2.0/mod.mjs";
 
 const 
 /** Functions to create RDF statements and terms. */
@@ -88,7 +87,7 @@ function selectUserLiteral(dataset) {
     all      : navigator.languages.map(s => langTag`${s}`)
   };
 
-  try { // TODO optimise (langTag computing etc)
+  try { // TODO compute langTags only once
     // find exact preferred language tag
     for (const quad of dataset) {
       if(quad.object.termType !== 'Literal')continue;
