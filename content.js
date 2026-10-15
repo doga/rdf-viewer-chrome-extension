@@ -310,53 +310,101 @@ function emptyOntologyPage() {
   document.head.appendChild(styleTag);
 
   const
-  l10nLangs = ['en'],
+  l10nLangs = ['en', 'fr', 'de', 'tr'],
+
+  /** 
+   * @see {@link https://www.emse.fr/~zimmermann/W3C/glossaire.html} 
+   **/
   l10n = {
     preferredPrefix: {
-      en: 'Preferred Prefix:',
+      en: 'Preferred prefix',
+      fr: 'Préfixe préférée',
+      de: 'Bevorzugtes Präfix',
+      tr: 'Tercih edilen ön ek',
     },
     preferredNamespace: {
-      en: 'Preferred Namespace:',
+      en: 'Preferred namespace',
+      fr: 'Espace de nom préférée',
+      de: 'Bevorzugtes Namespace',
+      tr: 'Tercih edilen ad alanı',
     },
     declaredPrefixes: {
-      en: 'Declared Prefixes',
+      en: 'Declared prefixes',
+      fr: 'Préfixes déclarées',
+      de: 'Deklarierte Präfixe',
+      tr: 'Açıklanmış ön ekler',
     },
     prefix: {
       en: 'Prefix',
+      fr: 'Préfixe',
+      de: 'Präfix',
+      tr: 'Ön ek',
     },
     namespaceIri: {
       en: 'Namespace IRI',
+      fr: "IRI d'espace de noms",
+      de: 'IRI des Namespaces',
+      tr: "Ad alanının IRI'si",
     },
     classes: {
       en: 'Classes',
+      fr: 'Classes',
+      de: 'Klassen',
+      tr: 'Sınıflar',
     },
     classNameIri: {
-      en: 'Class Name / IRI',
+      en: 'Class name / IRI',
+      fr: 'Nom de classe / IRI',
+      de: 'Klassenname / IRI',
+      tr: 'Sınıf ismi / IRI',
     },
     description: {
       en: 'Description',
+      fr: 'Description',
+      de: 'Beschreibung',
+      tr: 'Açıklama',
     },
     predicates: {
       en: 'Predicates / Properties',
+      fr: 'Prédicats / Propriétés',
+      de: 'Eigenschaften / Relationen',
+      tr: 'Yüklemler / Özellikler',
     },
     predicateIri: {
       en: 'Predicate / IRI',
+      fr: 'Prédicat / IRI',
+      de: 'Eigenschaft / IRI',
     },
     datatypes: {
       en: 'Datatypes',
+      fr: 'Types de données',
+      de: 'Datenarten',
+      tr: 'Veri türüleri',
     },
     datatypeIri: {
       en: 'Datatype / IRI',
+      fr: 'Type de données / IRI',
+      de: 'Datenart / IRI',
+      tr: 'Veri türü / IRI',
     },
     viewRaw: {
       en: 'View raw',
+      fr: "Voir l'original",
+      de: 'Ursprungliches Dokument sehen',
+      tr: 'Orijinal belgeyi görüntüle',
     },
     viewHtml: {
       en: 'View as HTML document',
+      fr: 'Voir le HTML dérivé',
+      de: 'Abgeleitetes HTML sehen',
+      tr: "Türetilmiş HTML'yi görüntüle",
     },
   },
   userLang  = navigator.language.split('-')[0].toLowerCase(),
   userLangs = navigator.languages.map(l => l.split('-')[0].toLowerCase()),
+  // selectedLang = 'de';
+  // selectedLang = 'fr';
+  // selectedLang = `tr`;
   selectedLang = l10nLangs.find(lang => lang === userLang) ?? userLangs.find(uLang => l10nLangs.find(lLang => lLang === uLang)) ?? 'en';
 
   document.body.className = "ontology-body";
@@ -366,8 +414,8 @@ function emptyOntologyPage() {
         <h1></h1>
         <p></p>
         <div id='vann' class="vann-meta hide">
-          <span><strong>${l10n.preferredPrefix[selectedLang]}</strong> <code class='vann-prefix'></code></span>
-          <span><strong>${l10n.preferredNamespace[selectedLang]}</strong> <code class='vann-iri'></code></span>
+          <span><strong>${l10n.preferredPrefix[selectedLang]}</strong>: <code class='vann-prefix'></code></span>
+          <span><strong>${l10n.preferredNamespace[selectedLang]}</strong>: <code class='vann-iri'></code></span>
         </div>
       </div>
 
