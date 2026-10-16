@@ -25,7 +25,7 @@ async function showRdf(rdf) {
     body    : {rdf},
   },
   response = await chrome.runtime.sendMessage(request);
-  // console.debug(`response`, response);
+  console.debug(`response`, response);
   if (!ok(response))return;
 
   switch (response.body.documentType) {

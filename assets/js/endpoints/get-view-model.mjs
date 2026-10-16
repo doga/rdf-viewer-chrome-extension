@@ -19,9 +19,12 @@ import { readNonOntologyDataset } from './get-view-model/read-non-ontology-datas
  * ENDPOINT FOR CONTENT SCRIPT REQUESTS.
  * Parses an RDF document (Turtle, TriG, N-Triples or N-Quads) and returns a view model
  * for the content script to display.
+ * 
+ * In the returned result, `documentType` is 'dataset' or 'ontology'. `ontologyType` is 'owl', 'rdfs' or undefined.
+ * 
  * @param {{rdf: string}} args 
  * @throws {TypeError}
- * @returns {({documentType: 'unknown'} | {documentType: 'ontology', ontologyType: string, title: string, description: string, vann: {prefix: string, iri: string}, prefixes: Object.<string, string>, classes: {?label: string, iri: string, ?description: string}[], predicates: {?label: string, iri: string, ?description: string, domain: string[], range: string[]}[], datatypes: {?label: string, iri: string, ?description: string}[]})}
+ * @returns {({documentType: string, ontologyType: string, ?title: string, ?description: string, vann: {prefix: string, iri: string}, prefixes: Object.<string, string>, classes: {?label: string, iri: string, ?description: string}[], objectProperties: {?label: string, iri: string, ?description: string, domain: string[], range: string[]}[], datatypeProperties: {?label: string, iri: string, ?description: string, domain: string[], range: string[]}[]} | {documentType: string, ontologyType: string, ?title: string, ?description: string, vann: {prefix: string, iri: string}, prefixes: Object.<string, string>, classes: {?label: string, iri: string, ?description: string}[], predicates: {?label: string, iri: string, ?description: string, domain: string[], range: string[]}[], datatypes: {?label: string, iri: string, ?description: string}[]} | {documentType: string, prefixes: Object.<string, string>, statements: Object[]})}
  * @async
  */
 async function getViewModel(args) {

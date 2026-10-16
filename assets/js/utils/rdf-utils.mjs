@@ -3,14 +3,11 @@
  * @description utility functions for handling RDF
  */
 
-// N3.js
 import { Parser, DataFactory } from '../pulled-in/N3.js/v2.13.12/n3.esm.min.js';
-
 import { iri, IRI } from "../pulled-in/IRI/3.1.6/mod.mjs";
-
 import { LanguageTag, langTag } from "../pulled-in/language/1.2.0/mod.mjs";
+import { isNull, isUndefined, isPlainObject, isString, isEmptyString } from "./js-utils.mjs";
 
-import { isString } from "./js-utils.mjs";
 
 const 
 /** Functions to create RDF statements and terms. */
@@ -156,7 +153,144 @@ function isPrefix(prefix, namespace) {
   return isString(prefix) && prefix.match(/[\S]+/) && isString(namespace) && iri`${namespace}` && iri`${namespace}a`; // && iri`${namespace}a` ?
 }
 
+
+
+/**
+ * Is the arg an RDF term?
+ * @param {*} term 
+ * @returns {boolean}
+ * @see {@link https://rdf.js.org/data-model-spec/#term-interface | Term interface}
+ */
+function isTerm(term) {
+  return (
+    isPlainObject(term) && 
+    [
+      'NamedNode', 'BlankNode', 'Literal', 'Variable', 'DefaultGraph', 
+      'Quad' // should have been another term type named 'Triple' for triple-terms; 'Quad' is unsuitable for triple-terms
+    ].includes(term.termType) && 
+    isString(term.value) 
+  );
+}
+
+
+/**
+ * Is the arg a named node?
+ * @param {*} term 
+ * @returns {boolean}
+ * @see {@link https://rdf.js.org/data-model-spec/#namednode-interface | NamedNode interface}
+ */
+function isNamedNode(term) {
+  try {
+    return (
+      isTerm(term) && 
+      term.termType === 'NamedNode' &&
+      iri`${term.value}` instanceof IRI // wastes compute?
+    );
+  } catch (error) {
+    return false;
+  }
+}
+
+
+/**
+ * Is the arg a blank node?
+ * @param {*} term 
+ * @returns {boolean}
+ * @see {@link https://rdf.js.org/data-model-spec/#blanknode-interface | BlankNode interface}
+ */
+function isBlankNode(term) {
+  try {
+    return (
+      isTerm(term) && 
+      term.termType === 'BlankNode'
+    );
+  } catch (error) {
+    return false;
+  }
+}
+
+
+/**
+ * Is the arg a literal?
+ * @param {*} term 
+ * @returns {boolean}
+ * @see {@link https://rdf.js.org/data-model-spec/#literal-interface | Literal interface}
+ */
+function isLiteral(term) {
+  if(!isTerm(term))return false;
+  if(!(term.termType === 'Literal'))return false;
+
+  // language and direction
+  let 
+  language         = term.language,
+  direction        = term.direction,
+  isDirectionGiven = false;
+
+  if (!isString(language)) return false;
+  if (!isEmptyString(language)) {
+    language = langTag`${language}`; if(isNull(language)) return false;
+    isDirectionGiven = ['ltr', 'rtl'].includes(direction);
+    if(!(isDirectionGiven || direction === '' || isNull(direction) || isUndefined(direction))) return false;
+  } else language = null;
+  
+  // datatype
+  let datatype = iri`http://www.w3.org/2001/XMLSchema#string`; // if datatype is omitted, then it's a plain string
+
+  if (isNamedNode(term.datatype))
+  try {
+    datatype  = iri`${term.datatype.value}`;
+  } catch (error) {
+    return false;
+  }
+
+  // verify datatype's value
+  if (language) {
+    if (isDirectionGiven) {
+      if(!datatype.equals(iri`http://www.w3.org/1999/02/22-rdf-syntax-ns#dirLangString`))return false;
+    } else {
+      if(!datatype.equals(iri`http://www.w3.org/1999/02/22-rdf-syntax-ns#langString`))return false;
+    }
+  }
+
+  return true;
+}
+
+
+/**
+ * Is the arg the default graph term?
+ * @param {*} term 
+ * @returns {boolean}
+ * @see {@link https://rdf.js.org/data-model-spec/#defaultgraph-interface | DefaultGraph interface}
+ */
+function isDefaultGraph(term) {
+  return isTerm(term) && term.termType === 'DefaultGraph' && isEmptyString(term.value);
+}
+
+
+/**
+ * Is the arg a quad?
+ * @param {*} term 
+ * @returns {boolean}
+ * @see {@link https://rdf.js.org/data-model-spec/#quad-interface | Quad interface}
+ */
+function isQuad(term) {
+  return (
+    isTerm(term) && term.termType === 'Quad' && isEmptyString(term.value) &&
+    // subject
+    (isNamedNode(term.subject) || isBlankNode(term.subject) || isQuad(term.subject)) &&
+    // predicate
+    isNamedNode(term.predicate) &&
+    // object
+    (isNamedNode(term.object) || isLiteral(term.object) || isBlankNode(term.object)) &&
+    // graph
+    (isDefaultGraph(term.graph) || isNamedNode(term.graph) || isBlankNode(term.graph))
+  );
+}
+
+
+
 export { 
   parseRdf, t, selectUserLiteral, isPrefix,
   owl, rdf, rdfs, vann, dcterms, skos,
+  isTerm, isNamedNode, isBlankNode, isDefaultGraph, isQuad,
 };
