@@ -1,3 +1,4 @@
+
 /**
  * The untouched initial document
  * @type {string}
@@ -24,18 +25,29 @@ async function showRdf(rdf) {
     body    : {rdf},
   },
   response = await chrome.runtime.sendMessage(request);
-
   // console.debug(`response`, response);
   if (!ok(response))return;
-  if (response.body.documentType !== 'ontology')return;
-  
-  // make ontology human-readable
-  if (response.body.ontologyType === 'rdfs') {
-    // console.debug(`rendering rdfs`);
-    showRdfsOntology(response.body);
-  } else if (response.body.ontologyType === 'owl') {
-    // console.debug(`rendering owl`);
-    showOwlOntology(response.body);
+
+  switch (response.body.documentType) {
+    case 'ontology':
+      switch (response.body.ontologyType) {
+        case 'owl':
+          // console.debug(`rendering owl`);
+          showOwlOntology(response.body);
+          break;
+        case 'rdfs':
+          // console.debug(`rendering rdfs`);
+          showRdfsOntology(response.body);
+          break;
+        default:
+            break;
+      }
+      break;
+    case 'dataset':
+      showNonOntologyDataset(response.body);
+      break;
+    default:
+      break;
   }
 }
 
@@ -44,6 +56,395 @@ async function showRdf(rdf) {
 
 // libraries //////////////////////////////////////////////////////
 
+/**
+ * 
+ * @param {{documentType: string, prefixes: Object.<string, string>, statements: Object[]}} viewModel
+ */
+function showNonOntologyDataset(viewModel) {
+  // console.debug(`non-ontology dataset`);
+  emptyNonOntologyDatasetPage();
+  const 
+  qrmm = 'https://vocab.qworum.net/multi.ttl#',
+  ui = {
+    // title      : document.querySelector('.dataset-header > h1'),
+    // description: document.querySelector('.dataset-header > p'),
+    prefixes: {
+      badge    : document.querySelector('.dataset-section:nth-child(2) .badge'),
+      tableBody: document.querySelector('.dataset-section:nth-child(2) .prefix-table'),
+    },
+    statements: {
+      badge    : document.querySelector('.dataset-section:nth-child(3) .badge'),
+      tableBody: document.querySelector('.dataset-section:nth-child(3) .entity-table tbody'),
+    },
+  };
+  // ui.title.innerText                    = viewModel.title ?? 'An RDF Ontology';
+  // ui.description.innerText              = viewModel.description ?? '';
+  ui.prefixes.badge.innerText   = Object.entries(viewModel.prefixes).length;
+  ui.statements.badge.innerText = viewModel.statements.length;
+
+  // display prefixes
+  for (const [prefix, anIri] of Object.entries(viewModel.prefixes)) {
+    // console.debug(prefix, '→', iri);
+    // console.debug(ui.prefixes);
+    const entry = document.createElement('tr');
+    ui.prefixes.tableBody.append(entry);
+    entry.innerHTML = `
+      <td>
+        <strong></strong>
+      </td>
+      <td class="entity-iri"></td>
+    `;
+    const 
+    ui2 = {
+      prefix: entry.querySelector('strong'),
+      iri   : entry.querySelector('.entity-iri'),
+    };
+    ui2.prefix.innerText = prefix;
+    ui2.iri.innerText    = anIri;
+  }
+
+  // display statements
+  for (const statement of viewModel.statements) {
+    if ([`${qrmm}begin`, `${qrmm}end`].includes(statement.predicate.value))continue;
+    if(['Quad', 'Triple'].includes(statement.subject.termType))continue;
+
+    const entry = document.createElement('tr');
+    ui.statements.tableBody.append(entry);
+    entry.innerHTML = `
+      <td>
+        <span class="subject"></span>
+        <span class="predicate entity-iri"></span>
+        <span class="object"></span>
+      </td>
+    `;
+
+    const 
+    statementUi = {
+      subject  : entry.querySelector('.subject'),
+      predicate: entry.querySelector('.predicate'),
+      object   : entry.querySelector('.object'),
+    };
+
+    if (statement.subject.termType === 'NamedNode') {
+      statementUi.subject.innerText = prefixedIri(statement.subject.value, viewModel.prefixes);
+      statementUi.subject.classList.add('entity-iri');
+    } else if(['Quad', 'Triple'].includes(statement.subject.termType)) { // triple
+    } else { // blank node
+      statementUi.subject.innerText = `_:${statement.subject.value}`;
+    }
+    
+    statementUi.predicate.innerText = prefixedIri(statement.predicate.value, viewModel.prefixes);
+    
+    if (statement.object.termType === 'NamedNode') {
+      statementUi.object.innerText = prefixedIri(statement.object.value, viewModel.prefixes);
+      statementUi.object.classList.add('entity-iri');
+    } else if(statement.object.termType === 'BlankNode') {
+      statementUi.object.innerText = `_:${statement.object.value}`;
+    } else if(statement.object.termType === 'Literal') {
+      statementUi.object.innerText = statement.object.value;
+    }
+    // statementUi.subject.innerText = (
+    //   statement.subject.termType === 'NamedNode'
+    //   ? prefixedIri(statement.subject.value, viewModel.prefixes)
+    //   : (
+    //     ['Quad', 'Triple'].includes( statement.subject.termType)
+    //     ? ''
+    //     : ''
+    //   )
+    // );
+    // statementUi.predicate.innerText = prefixedIri(statement.predicate.value, viewModel.prefixes);
+    // statementUi.object.innerText = (
+    //   prefixedIri(statement.object.value, viewModel.prefixes)
+    // );
+    // if(def.label)statementUi.label.innerText = def.label;
+  }
+
+
+}
+
+function emptyNonOntologyDatasetPage() {
+  // console.debug(`page init`);
+  const styleTag = document.createElement('style');
+  styleTag.textContent = `
+    hide {display: none;}
+    body.dataset-body {
+      --bg: #f8fafc;
+      --text: #0f172a;
+      --surface: #ffffff;
+      --border: #e2e8f0;
+      --border-soft: #f1f5f9;
+      --heading: #1e293b;
+      --muted: #64748b;
+      --accent: #0284c7;
+      --accent-deep: #0369a1;
+      --accent-bg: #f0f9ff;
+      --accent-border: #bae6fd;
+      --th-bg: #f1f5f9;
+      --th-text: #475569;
+      --badge-bg: #e0f2fe;
+      --green-bg: #dcfce7;
+      --green-text: #15803d;
+      --btn-bg: #0f172a;
+      --btn-bg-hover: #334155;
+      --btn-text: #fff;
+      --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+      --btn-shadow: 0 4px 12px rgba(0,0,0,0.15);
+
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      margin: 0;
+      padding: 40px 20px;
+      line-height: 1.6;
+    }
+
+    /* Dark mode */
+    @media (prefers-color-scheme: dark) {
+      body.dataset-body {
+        --bg: #0b1120;
+        --text: #e2e8f0;
+        --surface: #111a2e;
+        --border: #1e293b;
+        --border-soft: #1e293b;
+        --heading: #f1f5f9;
+        --muted: #94a3b8;
+        --accent: #38bdf8;
+        --accent-deep: #7dd3fc;
+        --accent-bg: #0c2340;
+        --accent-border: #0c4a6e;
+        --th-bg: #1e293b;
+        --th-text: #cbd5e1;
+        --badge-bg: #082f49;
+        --green-bg: #052e16;
+        --green-text: #86efac;
+        --btn-bg: #e2e8f0;
+        --btn-bg-hover: #cbd5e1;
+        --btn-text: #0f172a;
+        --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -2px rgba(0, 0, 0, 0.4);
+        --btn-shadow: 0 4px 12px rgba(0,0,0,0.5);
+      }
+    }
+    .dataset-container {
+      max-width: 960px;
+      margin: 0 auto;
+      background: var(--surface);
+      padding: 32px;
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+    }
+    .dataset-header {
+      border-bottom: 2px solid var(--border);
+      padding-bottom: 16px;
+      margin-bottom: 24px;
+    }
+    .dataset-header h1 {
+      margin: 0 0 8px 0;
+      font-size: 28px;
+      color: var(--accent);
+    }
+    .dataset-header p {
+      margin: 0 0 12px 0;
+      color: var(--muted);
+      font-size: 15px;
+    }
+    .dataset-section {
+      margin-bottom: 32px;
+    }
+    .dataset-section h2 {
+      font-size: 20px;
+      color: var(--heading);
+      border-bottom: 1px solid var(--border-soft);
+      padding-bottom: 8px;
+      margin-bottom: 16px;
+    }
+    .prefix-table, .entity-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 8px;
+      font-size: 14px;
+    }
+    .prefix-table th, .prefix-table td,
+    .entity-table th, .entity-table td {
+      text-align: left;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .prefix-table th, .entity-table th {
+      background-color: var(--th-bg);
+      color: var(--th-text);
+      font-weight: 600;
+    }
+    .entity-iri {
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      color: var(--accent-deep);
+      font-size: 13px;
+      /*
+      &::before {
+        content: '<'
+      };
+      &::after {
+        content: '>'
+      };
+      */
+    }
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      font-size: 12px;
+      font-weight: 600;
+      border-radius: 9999px;
+      background-color: var(--badge-bg);
+      color: var(--accent-deep);
+      margin-left: 8px;
+    }
+    .toggle-raw-btn {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: var(--btn-bg);
+      color: var(--btn-text);
+      border: none;
+      padding: 10px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 500;
+      box-shadow: var(--btn-shadow);
+    }
+    .toggle-raw-btn:hover {
+      background: var(--btn-bg-hover);
+    }  
+  `;
+
+  document.head.appendChild(styleTag);
+
+  const
+  /**
+   * The localisation languages for the HTML template. The first is the default.
+   */
+  l10nLangs = ['en', 'fr', 'de', 'tr'],
+
+  /** 
+   * Localised template strings.
+   * @see {@link https://www.emse.fr/~zimmermann/W3C/glossaire.html | Glossaire français-anglais pour les concepts de RDF 1.1} 
+   **/
+  l10n = {
+    title: {
+      en: 'Dataset',
+      fr: 'Jeu de données',
+      de: 'Datensatz',
+      tr: 'Veri kümesi',
+    },
+    prefixes: {
+      en: 'Prefixes',
+      fr: 'Préfixes',
+      de: 'Präfixe',
+      tr: 'Ön ekler',
+    },
+    prefix: {
+      en: 'Prefix',
+      fr: 'Préfixe',
+      de: 'Präfix',
+      tr: 'Ön ek',
+    },
+    namespaceIri: {
+      en: 'Namespace IRI',
+      fr: "IRI d'espace de noms",
+      de: 'IRI des Namespaces',
+      tr: "Ad alanının IRI'si",
+    },
+    statements: {
+      en: 'Statements',
+      fr: 'Affirmations',
+      de: 'Erklärungen',
+      tr: "Açıklamalar",
+    },
+    viewRaw: {
+      en: 'View raw',
+      fr: "Voir l'original",
+      de: 'Ursprungliches Dokument sehen',
+      tr: 'Orijinal belgeyi görüntüle',
+    },
+    viewHtml: {
+      en: 'View as HTML document',
+      fr: 'Voir le HTML dérivé',
+      de: 'Abgeleitetes HTML sehen',
+      tr: "Türetilmiş HTML'yi görüntüle",
+    },
+  },
+  userLang  = navigator.language.split('-')[0].toLowerCase(),
+  userLangs = navigator.languages.map(l => l.split('-')[0].toLowerCase()),
+  // selectedLang = 'de';
+  // selectedLang = 'fr';
+  // selectedLang = `tr`;
+  selectedLang = l10nLangs.find(lang => lang === userLang) ?? userLangs.find(uLang => l10nLangs.find(lLang => lLang === uLang)) ?? l10nLangs[0];
+
+  document.body.className = 'dataset-body';
+  document.body.innerHTML = `
+    <div class="dataset-container">
+      <div class="dataset-header">
+        <h1>${l10n.title[selectedLang]}</h1>
+        <p></p>
+      </div>
+
+      <!-- Prefixes Section -->
+      <div class="dataset-section">
+        <h2>${l10n.prefixes[selectedLang]} <span class="badge"></span></h2>
+        <table class="prefix-table">
+          <thead>
+            <tr><th>${l10n.prefix[selectedLang]}</th><th>${l10n.namespaceIri[selectedLang]}</th></tr>
+          </thead>
+          <tbody>
+          <!--
+            <tr>
+              <td>
+                <strong></strong> <span class="badge-vann"></span>
+              </td>
+              <td class="entity-iri"></td>
+            </tr>
+          -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Statements Section -->
+      <div class="dataset-section">
+        <h2>${l10n.statements[selectedLang]} <span class="badge"></span></h2>
+        <table class="entity-table">
+          <tbody>
+            <!--
+              <tr>
+                <td>
+                  <strong></strong><br/>
+                  <span class="entity-iri"></span>
+                </td>
+                <td></td>
+              </tr>
+            -->
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+
+    <button class="toggle-raw-btn" id="toggleRawBtn">${l10n.viewRaw[selectedLang]}</button>
+  `;
+
+  let showingRaw = false;
+  document.getElementById('toggleRawBtn').addEventListener('click', () => {
+    showingRaw = !showingRaw;
+    if (showingRaw) {
+      document.body.innerHTML = `<pre style="white-space: pre-wrap; word-break: break-all; padding: 20px; font-family: monospace;">${rawText.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre><button class="toggle-raw-btn" id="toggleRawBtn">${l10n.viewHtml[selectedLang]}</button>`;
+      document.getElementById('toggleRawBtn').addEventListener('click', () => location.reload());
+    }
+  });
+}
+
+
+/**
+ * 
+ * @param {{ontologyType: string, ?title: string, ?description: string, vann: {prefix: string, iri: string}, prefixes: Object.<string, string>, classes: {?label: string, iri: string, ?description: string}[], objectProperties: {?label: string, iri: string, ?description: string, domain: string[], range: string[]}[], datatypeProperties: {?label: string, iri: string, ?description: string, domain: string[], range: string[]}[]}} viewModel
+ */
 function showOwlOntology(viewModel) {
   emptyOwlOntologyPage();
   const 
@@ -85,7 +486,7 @@ function showOwlOntology(viewModel) {
   // console.debug('ui', ui);
 
   // display prefixes
-  for (const [prefix, iri] of Object.entries(viewModel.prefixes)) {
+  for (const [prefix, anIri] of Object.entries(viewModel.prefixes)) {
     // console.debug(prefix, '→', iri);
     // console.debug(ui.prefixes);
     const entry = document.createElement('tr');
@@ -102,7 +503,7 @@ function showOwlOntology(viewModel) {
       iri   : entry.querySelector('.entity-iri'),
     };
     ui2.prefix.innerText = prefix;
-    ui2.iri.innerText = iri;
+    ui2.iri.innerText = anIri;
   }
 
 
@@ -561,6 +962,11 @@ function emptyOwlOntologyPage() {
   });
 }
 
+
+/**
+ * 
+ * @param {{ontologyType: string, ?title: string, ?description: string, vann: {prefix: string, iri: string}, prefixes: Object.<string, string>, classes: {?label: string, iri: string, ?description: string}[], predicates: {?label: string, iri: string, ?description: string, domain: string[], range: string[]}[], datatypes: {?label: string, iri: string, ?description: string}[]}} viewModel
+ */
 function showRdfsOntology(viewModel) {
   emptyRdfsOntologyPage();
   const 
@@ -602,7 +1008,7 @@ function showRdfsOntology(viewModel) {
   // console.debug('ui', ui);
 
   // display prefixes
-  for (const [prefix, iri] of Object.entries(viewModel.prefixes)) {
+  for (const [prefix, anIri] of Object.entries(viewModel.prefixes)) {
     // console.debug(prefix, '→', iri);
     // console.debug(ui.prefixes);
     const entry = document.createElement('tr');
@@ -619,7 +1025,7 @@ function showRdfsOntology(viewModel) {
       iri   : entry.querySelector('.entity-iri'),
     };
     ui2.prefix.innerText = prefix;
-    ui2.iri.innerText = iri;
+    ui2.iri.innerText = anIri;
   }
 
 

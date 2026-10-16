@@ -13,6 +13,7 @@ import {IRI, IRL, URN, irl, url, urn, iri} from '../pulled-in/IRI/3.1.6/mod.mjs'
 
 import { readRdfsOntology } from "./get-view-model/read-rdfs-ontology.mjs";
 import { readOwlOntology } from "./get-view-model/read-owl-ontology.mjs";
+import { readNonOntologyDataset } from './get-view-model/read-non-ontology-dataset.mjs';
 
 /**
  * ENDPOINT FOR CONTENT SCRIPT REQUESTS.
@@ -34,19 +35,25 @@ async function getViewModel(args) {
   /**
    * @type {?{ontologyType: string, vann: {prefix: string, iri: string}, title: string, description: string}}
    */
-  ontologyMeta = detectOntology(dataset);
-
-  if(!ontologyMeta)return { documentType: 'dataset' };
+  meta = detectOntology(dataset) ?? { documentType: 'dataset' };
 
   // add vann prefix to declared prefixes
-  prefixes[ontologyMeta.vann.prefix] = ontologyMeta.vann.iri;
-  ontologyMeta.prefixes = prefixes;
+  if (meta.documentType === 'ontology') {
+    prefixes[meta.vann.prefix] = meta.vann.iri;
+    meta.prefixes              = prefixes;
+  }
 
   const viewModel = (
-    ontologyMeta.ontologyType === 'owl'
-    ? readOwlOntology(dataset, ontologyMeta)
-    : readRdfsOntology(dataset, ontologyMeta)
+    meta.documentType === 'dataset'
+    ? readNonOntologyDataset(dataset, prefixes)
+    : (
+      meta.ontologyType === 'owl'
+      ? readOwlOntology(dataset, meta)
+      : readRdfsOntology(dataset, meta)
+    )
   );
+
+  // console.debug(`viewModel`,viewModel);
 
   return viewModel;
 }

@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "RDF Viewer",
-  "version": "1.4",
+  "version": "1.5",
   "description": "Displays RDF documents as human-readable HTML documents.",
   "background": {
     "service_worker": "background.js",

@@ -69,7 +69,7 @@ async function parseRdf(rdfDocument) {
 
         // onPrefix (optional) accepts a listener of type (prefix: string, iri: NamedNode) => void
         onPrefix: (prefix, anIri) => { 
-          if(iri`${anIri.value}` && iri`${anIri.value}a`) prefixes[prefix] = anIri.value; 
+          if(iri`${anIri.value}` && iri`${anIri.value}a`) prefixes[prefix] = anIri.value; //  && iri`${anIri.value}a` ?
           // console.debug(prefix, 'expands to', anIri.value); 
         },
         // onComment (optional) accepts a listener of type (comment: string) => void
@@ -153,7 +153,7 @@ function selectUserLiteral(dataset) {
  * @returns {boolean}
  */
 function isPrefix(prefix, namespace) {
-  return isString(prefix) && prefix.match(/[\S]+/) && isString(namespace) && iri`${namespace}` && iri`${namespace}a`;
+  return isString(prefix) && prefix.match(/[\S]+/) && isString(namespace) && iri`${namespace}` && iri`${namespace}a`; // && iri`${namespace}a` ?
 }
 
 export { 
