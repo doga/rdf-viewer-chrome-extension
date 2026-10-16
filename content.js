@@ -112,55 +112,54 @@ function showNonOntologyDataset(viewModel) {
     ui.statements.tableBody.append(entry);
     entry.innerHTML = `
       <td>
-        <span class="subject"></span>
-        <span class="predicate entity-iri"></span>
-        <span class="object"></span>
       </td>
     `;
 
-    const 
-    statementUi = {
-      subject  : entry.querySelector('.subject'),
-      predicate: entry.querySelector('.predicate'),
-      object   : entry.querySelector('.object'),
+    renderStatement(statement, entry.querySelector('td'), viewModel.prefixes);
+  }
+}
+
+
+function renderStatement(statement, parentUi, prefixes) {
+    parentUi.innerHTML = `
+      <span class="subject entity-iri"></span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      <span class="predicate entity-iri"></span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      <span class="object entity-iri"></span>
+    `;
+
+    const statementUi = {
+      subject  : parentUi.querySelector('.subject'),
+      predicate: parentUi.querySelector('.predicate'),
+      object   : parentUi.querySelector('.object'),
     };
 
     if (statement.subject.termType === 'NamedNode') {
-      statementUi.subject.innerText = prefixedIri(statement.subject.value, viewModel.prefixes);
-      statementUi.subject.classList.add('entity-iri');
+      statementUi.subject.innerText = prefixedIri(statement.subject.value, prefixes);
     } else if(['Quad', 'Triple'].includes(statement.subject.termType)) { // triple
+      // recursive!
+      statementUi.subject.classList.remove('entity-iri');
+      statementUi.subject.innerHTML = `
+        <span class='triple-term'>
+        </span>
+      `;
+      renderStatement(statement.subject, statementUi.subject.querySelector('span'), prefixes);
     } else { // blank node
       statementUi.subject.innerText = `_:${statement.subject.value}`;
     }
     
-    statementUi.predicate.innerText = prefixedIri(statement.predicate.value, viewModel.prefixes);
+    statementUi.predicate.innerText = prefixedIri(statement.predicate.value, prefixes);
     
     if (statement.object.termType === 'NamedNode') {
-      statementUi.object.innerText = prefixedIri(statement.object.value, viewModel.prefixes);
-      statementUi.object.classList.add('entity-iri');
+      statementUi.object.innerText = prefixedIri(statement.object.value, prefixes);
     } else if(statement.object.termType === 'BlankNode') {
       statementUi.object.innerText = `_:${statement.object.value}`;
     } else if(statement.object.termType === 'Literal') {
+      statementUi.object.classList.remove('entity-iri');
       statementUi.object.innerText = statement.object.value;
     }
-    // statementUi.subject.innerText = (
-    //   statement.subject.termType === 'NamedNode'
-    //   ? prefixedIri(statement.subject.value, viewModel.prefixes)
-    //   : (
-    //     ['Quad', 'Triple'].includes( statement.subject.termType)
-    //     ? ''
-    //     : ''
-    //   )
-    // );
-    // statementUi.predicate.innerText = prefixedIri(statement.predicate.value, viewModel.prefixes);
-    // statementUi.object.innerText = (
-    //   prefixedIri(statement.object.value, viewModel.prefixes)
-    // );
-    // if(def.label)statementUi.label.innerText = def.label;
-  }
-
-
 }
+
+
 
 function emptyNonOntologyDatasetPage() {
   // console.debug(`page init`);
@@ -279,14 +278,14 @@ function emptyNonOntologyDatasetPage() {
       font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
       color: var(--accent-deep);
       font-size: 13px;
-      /*
+    }
+    .triple-term {
       &::before {
-        content: '<'
+        content: '《';
       };
       &::after {
-        content: '>'
+        content: '》'
       };
-      */
     }
     .badge {
       display: inline-block;
