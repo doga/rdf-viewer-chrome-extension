@@ -5,14 +5,13 @@
 
 // RDF
 import { Store } from '../pulled-in/N3.js/v2.13.12/n3.esm.min.js';
-import { parseRdf, t, selectUserLiteral } from "../utils/rdf-utils.mjs";
+import { 
+  parseRdf, t, selectUserLiteral, isPrefix,
+  owl, rdf, rdfs, vann,
+} from "../utils/rdf-utils.mjs";
 import {IRI, IRL, URN, irl, url, urn, iri} from '../pulled-in/IRI/3.1.6/mod.mjs';
 
-const
-rdf  = iri`http://www.w3.org/1999/02/22-rdf-syntax-ns#`,
-rdfs = iri`http://www.w3.org/2000/01/rdf-schema#`,
-vann = iri`http://purl.org/vocab/vann/`;
-
+import { readRdfsOntology } from "./get-view-model/read-rdfs-ontology.mjs";
 
 /**
  * ENDPOINT FOR CONTENT SCRIPT REQUESTS.
@@ -20,7 +19,7 @@ vann = iri`http://purl.org/vocab/vann/`;
  * for the content script to display.
  * @param {{rdf: string}} args 
  * @throws {TypeError}
- * @returns {({documentType: 'unknown'} | {documentType: 'ontology', ontologyType: string, ?title: string, ?description: string, vann: {prefix: string, iri: string}, prefixes: Object.<string, string>, classes: {?label: string, iri: string, ?description: string}[], predicates: {?label: string, iri: string, ?description: string, domain: string[], range: string[]}[], datatypes: {?label: string, iri: string, ?description: string}[]})}
+ * @returns {({documentType: 'unknown'} | {documentType: 'ontology', ontologyType: string, title: string, description: string, vann: {prefix: string, iri: string}, prefixes: Object.<string, string>, classes: {?label: string, iri: string, ?description: string}[], predicates: {?label: string, iri: string, ?description: string, domain: string[], range: string[]}[], datatypes: {?label: string, iri: string, ?description: string}[]})}
  * @async
  */
 async function getViewModel(args) {
@@ -31,134 +30,86 @@ async function getViewModel(args) {
   /** @see {@link https://rdf.js.org/dataset-spec/#dataset-interface | Dataset interface} */
   dataset = new Store(quads),
 
-  // Ontology?
-  /** @see {@link https://rdf.js.org/dataset-spec/#dataset-interface | Dataset interface} */
-  vannPrefixDs = dataset.match(null, t.namedNode(`${vann}preferredNamespacePrefix`)),
+  /**
+   * @type {?{ontologyType: string, vann: {prefix: string, namespace: string}, title: string, description: string}}
+   */
+  ontologyMeta = detectOntology(dataset);
 
-  /** @see {@link https://rdf.js.org/dataset-spec/#dataset-interface | Dataset interface} */
-  vannUriDs = dataset.match(null, t.namedNode(`${vann}preferredNamespaceUri`));
+  if(!ontologyMeta)return { documentType: 'dataset' };
 
-  if ([vannPrefixDs, vannUriDs].every(ds => ds.size === 1)) {
-    // ontology
-    let 
-    /** @type {string} */
-    vannPrefix, 
-    /** @type {string} */
-    vannUri,
-    /** @type {string} */
-    ontologyTitle,
-    /** @type {string} */
-    ontologyDescription,
-    /** @type {string} */
-    ontologyIri;
+  // add vann prefix to declared prefixes
+  prefixes[ontologyMeta.vann.prefix] = ontologyMeta.vann.namespace;
+  ontologyMeta.prefixes = prefixes;
 
-    for (const quad of vannPrefixDs) {
-      vannPrefix = quad.object.value;
-      ontologyIri = quad.subject.value;
-    }
-    for (const quad of vannUriDs) {
-      if(ontologyIri !== quad.subject.value)ontologyIri = null; // only one ontology!
-      vannUri = quad.object.value;
-
-      // ontology title
-      ontologyTitle = selectUserLiteral(dataset.match(quad.subject, t.namedNode(`${rdfs}label`)))?.value.trim() ?? '';
-      // for (const q of dataset.match(quad.subject, t.namedNode(`${rdfs}label`))) {
-      //   ontologyTitle = q.object.value.trim();
-      // }
-
-      // ontology description
-      ontologyDescription = selectUserLiteral(dataset.match(quad.subject, t.namedNode(`${rdfs}comment`)))?.value.trim() ?? 'An RDF Ontology';
-      // for (const q of dataset.match(quad.subject, t.namedNode(`${rdfs}comment`))) {
-      //   ontologyDescription = q.object.value.trim();
-      // }
-    }
-    if(!ontologyIri)return { documentType: 'unknown' };
-
-    const viewModel = getViewModelForOntology(
-      dataset, 
-      {title: ontologyTitle, description: ontologyDescription, prefixes, vann: {prefix: vannPrefix, iri: vannUri}}
-    );
-    viewModel.documentType = 'ontology';
-
-    return viewModel;
-  } else {
-  }
-
-  return { documentType: 'unknown' };
-}
-
-/**
- * Returns an ontology view model.
- * @param {Object} dataset
- * @param {?title: string, ?description: string, {vann: {prefix: string, iri: string}, prefixes: Object.<string, string>}} meta
- * @throws {TypeError}
- * @returns {{ontologyType: string, ?title: string, ?description: string, vann: {prefix: string, iri: string}, prefixes: Object.<string, string>, classes: {?label: string, iri: string, ?description: string}[], predicates: {?label: string, iri: string, ?description: string, domain: string[], range: string[]}[], datatypes: {?label: string, iri: string, ?description: string}[]}}
- * @async
- */
-function getViewModelForOntology(dataset, meta) {
-  const
-  viewModel = {
-    ontologyType: 'rdfs', // owl
-    title       : meta.title,
-    description : meta.description,
-    vann        : meta.vann,
-    prefixes    : meta.prefixes,
-    classes     : [],
-    predicates  : [],
-    datatypes   : []
-  },
-
-  /** @see {@link https://rdf.js.org/dataset-spec/#dataset-interface | Dataset interface} */
-  classesDs = dataset.match(null, t.namedNode(`${rdf}type`), t.namedNode(`${rdfs}Class`)),
-  
-  /** @see {@link https://rdf.js.org/dataset-spec/#dataset-interface | Dataset interface} */
-  predicatesDs = dataset.match(null, t.namedNode(`${rdf}type`), t.namedNode(`${rdf}Property`)),
-
-  /** @see {@link https://rdf.js.org/dataset-spec/#dataset-interface | Dataset interface} */
-  datatypesDs = dataset.match(null, t.namedNode(`${rdf}type`), t.namedNode(`${rdfs}Datatype`));
-
-  // labels and descriptions
-  const vms = [viewModel.classes, viewModel.predicates, viewModel.datatypes];
-  [classesDs, predicatesDs, datatypesDs].forEach(
-    ds => {
-      const vm = vms.shift();
-      for (const quad of ds) {
-        const
-        iri         = quad.subject.value,
-        label       = selectUserLiteral(dataset.match(quad.subject, t.namedNode(`${rdfs}label`)))?.value.trim() ?? '',
-        description = selectUserLiteral(dataset.match(quad.subject, t.namedNode(`${rdfs}comment`)))?.value.trim() ?? '';
-
-        // for (const q of dataset.match(quad.subject, t.namedNode(`${rdfs}label`))) {
-        //   label = q.object.value;
-        // }
-        // for (const q of dataset.match(quad.subject, t.namedNode(`${rdfs}comment`))) {
-        //   description = q.object.value;
-        // }
-        vm.push({iri, label, description});
-      }
-    }
-  );
-
-  // predicates: domains and ranges
-  for (const quad of predicatesDs) {
-    const 
-    iri = quad.subject.value,
-    vm  = viewModel.predicates.find(e => e.iri === iri);
-
-    vm.domain = [];
-    vm.range  = [];
-
-    for (const q of dataset.match(quad.subject, t.namedNode(`${rdfs}domain`))) {
-      vm.domain.push(q.object.value);
-    }
-
-    for (const q of dataset.match(quad.subject, t.namedNode(`${rdfs}range`))) {
-      vm.range.push(q.object.value);
-    }
-    
-  }
+  const viewModel = readRdfsOntology(dataset, ontologyMeta);
 
   return viewModel;
 }
+
+/**
+ * Does the dataset contain an ontology?
+ * ontologyType is 'owl' or 'rdfs'.
+ * @param {Object} dataset
+ * @returns {?{ontologyType: string, vann: {prefix: string, namespace: string}, title: string, description: string}}
+ */
+function detectOntology(dataset) {
+  const
+  vannDs = {
+    /** @see {@link https://rdf.js.org/dataset-spec/#dataset-interface | Dataset interface} */
+    prefix: dataset.match(null, t.namedNode(`${vann}preferredNamespacePrefix`)),
+  
+    /** @see {@link https://rdf.js.org/dataset-spec/#dataset-interface | Dataset interface} */
+    iri: dataset.match(null, t.namedNode(`${vann}preferredNamespaceUri`)),
+  };
+  if (![vannDs.prefix, vannDs.iri].every(ds => ds.size === 1)) return null;
+
+  const 
+  vannMeta = {
+    /** @type {?string} */
+    prefix: null, 
+    /** @type {?string} */
+    iri: null,
+  },
+  ontology = {
+    /** @type {?string} */
+    title: null,
+    /** @type {?string} */
+    description: null,
+  };
+
+  let
+  /** @type {?IRI} */
+  ontologyIri = null;
+  
+  for (const quad of vannDs.prefix) {
+    vannMeta.prefix = quad.object.value;
+    ontologyIri = iri`${quad.subject.value}`;
+    if(!ontologyIri) return null;
+  }
+  
+  for (const quad of vannDs.iri) {
+    if(!ontologyIri.equals(iri`${quad.subject.value}`))return null; // only one ontology!
+    vannMeta.iri         = quad.object.value;
+    ontology.title       = selectUserLiteral(dataset.match(quad.subject, t.namedNode(`${rdfs}label`)))?.value.trim() ?? '';
+    ontology.description = selectUserLiteral(dataset.match(quad.subject, t.namedNode(`${rdfs}comment`)))?.value.trim() ?? '';
+  }
+  
+  if (!isPrefix(vannMeta.prefix, vannMeta.iri))return null;
+  
+  if (
+    dataset.match(null, t.namedNode(`${rdf}type`), t.namedNode(`${owl}Class`)).size > 0 ||
+    dataset.match(null, t.namedNode(`${rdf}type`), t.namedNode(`${owl}ObjectProperty`)).size > 0 ||
+    dataset.match(null, t.namedNode(`${rdf}type`), t.namedNode(`${owl}DatatypeProperty`)).size > 0
+  ) return {documentType: 'ontology', ontologyType: 'owl', vann: vannMeta, title: ontology.title, description: ontology.description};
+  
+  if (
+    dataset.match(null, t.namedNode(`${rdf}type`), t.namedNode(`${rdfs}Class`)).size > 0 ||
+    dataset.match(null, t.namedNode(`${rdf}type`), t.namedNode(`${rdf}Property`)).size > 0 ||
+    dataset.match(null, t.namedNode(`${rdf}type`), t.namedNode(`${rdfs}Datatype`)).size > 0
+  ) return {documentType: 'ontology', ontologyType: 'rdfs', vann: vannMeta, title: ontology.title, description: ontology.description};
+  
+  return null;
+}
+
 
 export {getViewModel};

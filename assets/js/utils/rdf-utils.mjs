@@ -6,7 +6,11 @@
 // N3.js
 import { Parser, DataFactory } from '../pulled-in/N3.js/v2.13.12/n3.esm.min.js';
 
+import { iri, IRI } from "../pulled-in/IRI/3.1.6/mod.mjs";
+
 import { LanguageTag, langTag } from "../pulled-in/language/1.2.0/mod.mjs";
+
+import { isString } from "./js-utils.mjs";
 
 const 
 /** Functions to create RDF statements and terms. */
@@ -18,6 +22,12 @@ t = {
   literal     : DataFactory.literal,
   defaultGraph: DataFactory.defaultGraph,
 },
+
+owl  = iri`http://www.w3.org/2002/07/owl#`,
+rdf  = iri`http://www.w3.org/1999/02/22-rdf-syntax-ns#`,
+rdfs = iri`http://www.w3.org/2000/01/rdf-schema#`,
+vann = iri`http://purl.org/vocab/vann/`,
+
 
 /**
  * A parser that can parse Turtle, TriG, N-Triples, and N-Quads documents.
@@ -56,9 +66,9 @@ async function parseRdf(rdfDocument) {
         },
 
         // onPrefix (optional) accepts a listener of type (prefix: string, iri: NamedNode) => void
-        onPrefix: (prefix, iri) => { 
-          prefixes[prefix] = iri.value; 
-          // console.debug(prefix, 'expands to', iri.value); 
+        onPrefix: (prefix, anIri) => { 
+          if(iri`${anIri.value}` && iri`${anIri.value}a`) prefixes[prefix] = anIri.value; 
+          // console.debug(prefix, 'expands to', anIri.value); 
         },
         // onComment (optional) accepts a listener of type (comment: string) => void
         // onComment: (comment) => { console.debug('#', comment); },
@@ -134,6 +144,17 @@ function selectUserLiteral(dataset) {
   }
 }
 
+/**
+ * 
+ * @param {string} prefix
+ * @param {string} namespace 
+ * @returns {boolean}
+ */
+function isPrefix(prefix, namespace) {
+  return isString(prefix) && prefix.match(/[\S]+/) && isString(namespace) && iri`${namespace}` && iri`${namespace}a`;
+}
+
 export { 
-  parseRdf, t, selectUserLiteral
+  parseRdf, t, selectUserLiteral, isPrefix,
+  owl, rdf, rdfs, vann,
 };

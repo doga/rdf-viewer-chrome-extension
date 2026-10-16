@@ -198,54 +198,104 @@ function emptyOntologyPage() {
   styleTag.textContent = `
     hide {display: none;}
     body.ontology-body {
-      background-color: #f8fafc;
-      color: #0f172a;
+      --bg: #f8fafc;
+      --text: #0f172a;
+      --surface: #ffffff;
+      --border: #e2e8f0;
+      --border-soft: #f1f5f9;
+      --heading: #1e293b;
+      --muted: #64748b;
+      --accent: #0284c7;
+      --accent-deep: #0369a1;
+      --accent-bg: #f0f9ff;
+      --accent-border: #bae6fd;
+      --th-bg: #f1f5f9;
+      --th-text: #475569;
+      --badge-bg: #e0f2fe;
+      --green-bg: #dcfce7;
+      --green-text: #15803d;
+      --btn-bg: #0f172a;
+      --btn-bg-hover: #334155;
+      --btn-text: #fff;
+      --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+      --btn-shadow: 0 4px 12px rgba(0,0,0,0.15);
+
+      background-color: var(--bg);
+      color: var(--text);
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       margin: 0;
       padding: 40px 20px;
       line-height: 1.6;
     }
+
+    /* Dark mode */
+    @media (prefers-color-scheme: dark) {
+      body.ontology-body {
+        --bg: #0b1120;
+        --text: #e2e8f0;
+        --surface: #111a2e;
+        --border: #1e293b;
+        --border-soft: #1e293b;
+        --heading: #f1f5f9;
+        --muted: #94a3b8;
+        --accent: #38bdf8;
+        --accent-deep: #7dd3fc;
+        --accent-bg: #0c2340;
+        --accent-border: #0c4a6e;
+        --th-bg: #1e293b;
+        --th-text: #cbd5e1;
+        --badge-bg: #082f49;
+        --green-bg: #052e16;
+        --green-text: #86efac;
+        --btn-bg: #e2e8f0;
+        --btn-bg-hover: #cbd5e1;
+        --btn-text: #0f172a;
+        --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -2px rgba(0, 0, 0, 0.4);
+        --btn-shadow: 0 4px 12px rgba(0,0,0,0.5);
+      }
+    }
+
     .ontology-container {
       max-width: 960px;
       margin: 0 auto;
-      background: #ffffff;
+      background: var(--surface);
       padding: 32px;
       border-radius: 12px;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
-      border: 1px solid #e2e8f0;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
     }
     .ontology-header {
-      border-bottom: 2px solid #e2e8f0;
+      border-bottom: 2px solid var(--border);
       padding-bottom: 16px;
       margin-bottom: 24px;
     }
     .ontology-header h1 {
       margin: 0 0 8px 0;
       font-size: 28px;
-      color: #0284c7;
+      color: var(--accent);
     }
     .ontology-header p {
       margin: 0 0 12px 0;
-      color: #64748b;
+      color: var(--muted);
       font-size: 15px;
     }
     .vann-meta {
       display: inline-flex;
       gap: 16px;
-      background-color: #f0f9ff;
-      border: 1px solid #bae6fd;
+      background-color: var(--accent-bg);
+      border: 1px solid var(--accent-border);
       padding: 8px 14px;
       border-radius: 6px;
       font-size: 13px;
-      color: #0369a1;
+      color: var(--accent-deep);
     }
     .ontology-section {
       margin-bottom: 32px;
     }
     .ontology-section h2 {
       font-size: 20px;
-      color: #1e293b;
-      border-bottom: 1px solid #f1f5f9;
+      color: var(--heading);
+      border-bottom: 1px solid var(--border-soft);
       padding-bottom: 8px;
       margin-bottom: 16px;
     }
@@ -259,16 +309,16 @@ function emptyOntologyPage() {
     .entity-table th, .entity-table td {
       text-align: left;
       padding: 10px 12px;
-      border-bottom: 1px solid #e2e8f0;
+      border-bottom: 1px solid var(--border);
     }
     .prefix-table th, .entity-table th {
-      background-color: #f1f5f9;
-      color: #475569;
+      background-color: var(--th-bg);
+      color: var(--th-text);
       font-weight: 600;
     }
     .entity-iri {
       font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
-      color: #0369a1;
+      color: var(--accent-deep);
       font-size: 13px;
     }
     .badge {
@@ -277,13 +327,13 @@ function emptyOntologyPage() {
       font-size: 12px;
       font-weight: 600;
       border-radius: 9999px;
-      background-color: #e0f2fe;
-      color: #0369a1;
+      background-color: var(--badge-bg);
+      color: var(--accent-deep);
       margin-left: 8px;
     }
     .badge-vann {
-      background-color: #dcfce7;
-      color: #15803d;
+      background-color: var(--green-bg);
+      color: var(--green-text);
       margin-left: 6px;
       padding: 1px 6px;
       font-size: 10px;
@@ -294,26 +344,142 @@ function emptyOntologyPage() {
       position: fixed;
       bottom: 20px;
       right: 20px;
-      background: #0f172a;
-      color: #fff;
+      background: var(--btn-bg);
+      color: var(--btn-text);
       border: none;
       padding: 10px 16px;
       border-radius: 8px;
       cursor: pointer;
       font-weight: 500;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      box-shadow: var(--btn-shadow);
     }
     .toggle-raw-btn:hover {
-      background: #334155;
-    }
+      background: var(--btn-bg-hover);
+    }  
   `;
+  // styleTag.textContent = `
+  //   hide {display: none;}
+  //   body.ontology-body {
+  //     background-color: #f8fafc;
+  //     color: #0f172a;
+  //     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  //     margin: 0;
+  //     padding: 40px 20px;
+  //     line-height: 1.6;
+  //   }
+  //   .ontology-container {
+  //     max-width: 960px;
+  //     margin: 0 auto;
+  //     background: #ffffff;
+  //     padding: 32px;
+  //     border-radius: 12px;
+  //     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+  //     border: 1px solid #e2e8f0;
+  //   }
+  //   .ontology-header {
+  //     border-bottom: 2px solid #e2e8f0;
+  //     padding-bottom: 16px;
+  //     margin-bottom: 24px;
+  //   }
+  //   .ontology-header h1 {
+  //     margin: 0 0 8px 0;
+  //     font-size: 28px;
+  //     color: #0284c7;
+  //   }
+  //   .ontology-header p {
+  //     margin: 0 0 12px 0;
+  //     color: #64748b;
+  //     font-size: 15px;
+  //   }
+  //   .vann-meta {
+  //     display: inline-flex;
+  //     gap: 16px;
+  //     background-color: #f0f9ff;
+  //     border: 1px solid #bae6fd;
+  //     padding: 8px 14px;
+  //     border-radius: 6px;
+  //     font-size: 13px;
+  //     color: #0369a1;
+  //   }
+  //   .ontology-section {
+  //     margin-bottom: 32px;
+  //   }
+  //   .ontology-section h2 {
+  //     font-size: 20px;
+  //     color: #1e293b;
+  //     border-bottom: 1px solid #f1f5f9;
+  //     padding-bottom: 8px;
+  //     margin-bottom: 16px;
+  //   }
+  //   .prefix-table, .entity-table {
+  //     width: 100%;
+  //     border-collapse: collapse;
+  //     margin-top: 8px;
+  //     font-size: 14px;
+  //   }
+  //   .prefix-table th, .prefix-table td,
+  //   .entity-table th, .entity-table td {
+  //     text-align: left;
+  //     padding: 10px 12px;
+  //     border-bottom: 1px solid #e2e8f0;
+  //   }
+  //   .prefix-table th, .entity-table th {
+  //     background-color: #f1f5f9;
+  //     color: #475569;
+  //     font-weight: 600;
+  //   }
+  //   .entity-iri {
+  //     font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  //     color: #0369a1;
+  //     font-size: 13px;
+  //   }
+  //   .badge {
+  //     display: inline-block;
+  //     padding: 2px 8px;
+  //     font-size: 12px;
+  //     font-weight: 600;
+  //     border-radius: 9999px;
+  //     background-color: #e0f2fe;
+  //     color: #0369a1;
+  //     margin-left: 8px;
+  //   }
+  //   .badge-vann {
+  //     background-color: #dcfce7;
+  //     color: #15803d;
+  //     margin-left: 6px;
+  //     padding: 1px 6px;
+  //     font-size: 10px;
+  //     text-transform: uppercase;
+  //     // &::after {content: 'VANN'}
+  //   }
+  //   .toggle-raw-btn {
+  //     position: fixed;
+  //     bottom: 20px;
+  //     right: 20px;
+  //     background: #0f172a;
+  //     color: #fff;
+  //     border: none;
+  //     padding: 10px 16px;
+  //     border-radius: 8px;
+  //     cursor: pointer;
+  //     font-weight: 500;
+  //     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  //   }
+  //   .toggle-raw-btn:hover {
+  //     background: #334155;
+  //   }
+  // `;
   document.head.appendChild(styleTag);
 
   const
+  /**
+   * The localisation languages for the HTML template. The first is the default.
+   */
   l10nLangs = ['en', 'fr', 'de', 'tr'],
 
   /** 
-   * @see {@link https://www.emse.fr/~zimmermann/W3C/glossaire.html} 
+   * Localised template strings.
+   * @see {@link https://www.emse.fr/~zimmermann/W3C/glossaire.html | Glossaire français-anglais pour les concepts de RDF 1.1} 
    **/
   l10n = {
     preferredPrefix: {
@@ -329,10 +495,10 @@ function emptyOntologyPage() {
       tr: 'Tercih edilen ad alanı',
     },
     declaredPrefixes: {
-      en: 'Declared prefixes',
-      fr: 'Préfixes déclarées',
-      de: 'Deklarierte Präfixe',
-      tr: 'Açıklanmış ön ekler',
+      en: 'Prefixes',
+      fr: 'Préfixes',
+      de: 'Präfixe',
+      tr: 'Ön ekler',
     },
     prefix: {
       en: 'Prefix',
@@ -405,9 +571,9 @@ function emptyOntologyPage() {
   // selectedLang = 'de';
   // selectedLang = 'fr';
   // selectedLang = `tr`;
-  selectedLang = l10nLangs.find(lang => lang === userLang) ?? userLangs.find(uLang => l10nLangs.find(lLang => lLang === uLang)) ?? 'en';
+  selectedLang = l10nLangs.find(lang => lang === userLang) ?? userLangs.find(uLang => l10nLangs.find(lLang => lLang === uLang)) ?? l10nLangs[0];
 
-  document.body.className = "ontology-body";
+  document.body.className = 'ontology-body';
   document.body.innerHTML = `
     <div class="ontology-container">
       <div class="ontology-header">
