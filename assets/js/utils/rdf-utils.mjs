@@ -23,10 +23,12 @@ t = {
   defaultGraph: DataFactory.defaultGraph,
 },
 
-owl  = iri`http://www.w3.org/2002/07/owl#`,
-rdf  = iri`http://www.w3.org/1999/02/22-rdf-syntax-ns#`,
-rdfs = iri`http://www.w3.org/2000/01/rdf-schema#`,
-vann = iri`http://purl.org/vocab/vann/`,
+owl     = iri`http://www.w3.org/2002/07/owl#`,
+rdf     = iri`http://www.w3.org/1999/02/22-rdf-syntax-ns#`,
+rdfs    = iri`http://www.w3.org/2000/01/rdf-schema#`,
+vann    = iri`http://purl.org/vocab/vann/`,
+dcterms = iri`http://purl.org/dc/terms/`,
+skos    = iri`http://www.w3.org/2004/02/skos/core#`,
 
 
 /**
@@ -156,5 +158,5 @@ function isPrefix(prefix, namespace) {
 
 export { 
   parseRdf, t, selectUserLiteral, isPrefix,
-  owl, rdf, rdfs, vann,
+  owl, rdf, rdfs, vann, dcterms, skos,
 };

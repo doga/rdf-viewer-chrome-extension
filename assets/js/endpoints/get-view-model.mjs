@@ -7,11 +7,12 @@
 import { Store } from '../pulled-in/N3.js/v2.13.12/n3.esm.min.js';
 import { 
   parseRdf, t, selectUserLiteral, isPrefix,
-  owl, rdf, rdfs, vann,
+  owl, rdf, rdfs, vann, dcterms,
 } from "../utils/rdf-utils.mjs";
 import {IRI, IRL, URN, irl, url, urn, iri} from '../pulled-in/IRI/3.1.6/mod.mjs';
 
 import { readRdfsOntology } from "./get-view-model/read-rdfs-ontology.mjs";
+import { readOwlOntology } from "./get-view-model/read-owl-ontology.mjs";
 
 /**
  * ENDPOINT FOR CONTENT SCRIPT REQUESTS.
@@ -31,17 +32,21 @@ async function getViewModel(args) {
   dataset = new Store(quads),
 
   /**
-   * @type {?{ontologyType: string, vann: {prefix: string, namespace: string}, title: string, description: string}}
+   * @type {?{ontologyType: string, vann: {prefix: string, iri: string}, title: string, description: string}}
    */
   ontologyMeta = detectOntology(dataset);
 
   if(!ontologyMeta)return { documentType: 'dataset' };
 
   // add vann prefix to declared prefixes
-  prefixes[ontologyMeta.vann.prefix] = ontologyMeta.vann.namespace;
+  prefixes[ontologyMeta.vann.prefix] = ontologyMeta.vann.iri;
   ontologyMeta.prefixes = prefixes;
 
-  const viewModel = readRdfsOntology(dataset, ontologyMeta);
+  const viewModel = (
+    ontologyMeta.ontologyType === 'owl'
+    ? readOwlOntology(dataset, ontologyMeta)
+    : readRdfsOntology(dataset, ontologyMeta)
+  );
 
   return viewModel;
 }
@@ -90,8 +95,16 @@ function detectOntology(dataset) {
   for (const quad of vannDs.iri) {
     if(!ontologyIri.equals(iri`${quad.subject.value}`))return null; // only one ontology!
     vannMeta.iri         = quad.object.value;
-    ontology.title       = selectUserLiteral(dataset.match(quad.subject, t.namedNode(`${rdfs}label`)))?.value.trim() ?? '';
-    ontology.description = selectUserLiteral(dataset.match(quad.subject, t.namedNode(`${rdfs}comment`)))?.value.trim() ?? '';
+    ontology.title       = (
+      selectUserLiteral(dataset.match(quad.subject, t.namedNode(`${rdfs}label`)))?.value.trim() 
+      ?? selectUserLiteral(dataset.match(quad.subject, t.namedNode(`${dcterms}title`)))?.value.trim() 
+      ?? ''
+    );
+    ontology.description = (
+      selectUserLiteral(dataset.match(quad.subject, t.namedNode(`${rdfs}comment`)))?.value.trim() 
+      ?? selectUserLiteral(dataset.match(quad.subject, t.namedNode(`${dcterms}description`)))?.value.trim() 
+      ?? ''
+    );
   }
   
   if (!isPrefix(vannMeta.prefix, vannMeta.iri))return null;

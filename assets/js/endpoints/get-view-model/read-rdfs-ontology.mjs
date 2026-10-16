@@ -1,6 +1,6 @@
 import { 
   t, selectUserLiteral,
-  rdf, rdfs
+  rdf, rdfs, dcterms, skos,
 } from "../../utils/rdf-utils.mjs";
 
 /**
@@ -12,6 +12,7 @@ import {
  * @async
  */
 function readRdfsOntology(dataset, meta) {
+  console.debug(`rdfs ontology`);
   const
   /** @see {@link https://rdf.js.org/dataset-spec/#dataset-interface | Dataset interface} */
   classesDs = dataset.match(null, t.namedNode(`${rdf}type`), t.namedNode(`${rdfs}Class`)),
@@ -34,16 +35,18 @@ function readRdfsOntology(dataset, meta) {
       const vm = vms.shift();
       for (const quad of ds) {
         const
-        anIri         = quad.subject.value,
-        label       = selectUserLiteral(dataset.match(quad.subject, t.namedNode(`${rdfs}label`)))?.value.trim() ?? '',
-        description = selectUserLiteral(dataset.match(quad.subject, t.namedNode(`${rdfs}comment`)))?.value.trim() ?? '';
-
-        // for (const q of dataset.match(quad.subject, t.namedNode(`${rdfs}label`))) {
-        //   label = q.object.value;
-        // }
-        // for (const q of dataset.match(quad.subject, t.namedNode(`${rdfs}comment`))) {
-        //   description = q.object.value;
-        // }
+        anIri       = quad.subject.value,
+        label       = (
+          selectUserLiteral(dataset.match(quad.subject, t.namedNode(`${rdfs}label`)))?.value.trim() 
+          ?? selectUserLiteral(dataset.match(quad.subject, t.namedNode(`${dcterms}title`)))?.value.trim() 
+          ?? ''
+        ),
+        description = (
+          selectUserLiteral(dataset.match(quad.subject, t.namedNode(`${rdfs}comment`)))?.value.trim() 
+          ?? selectUserLiteral(dataset.match(quad.subject, t.namedNode(`${dcterms}description`)))?.value.trim() 
+          ?? selectUserLiteral(dataset.match(quad.subject, t.namedNode(`${skos}definition`)))?.value.trim() 
+          ?? ''
+        );
         vm.push({iri: anIri, label, description});
       }
     }

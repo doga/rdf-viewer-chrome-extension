@@ -5,7 +5,7 @@
 const rawText = document.body ? document.body.innerText : "";
 // if (!rawText.trim()) return;
 
-if (isRdf(document.contentType)) showHumanReadableRdf(document.body.innerText);
+if (isRdf(document.contentType)) showRdf(document.body.innerText);
 
 
 /**
@@ -13,7 +13,7 @@ if (isRdf(document.contentType)) showHumanReadableRdf(document.body.innerText);
  * @param {string} rdf 
  * @async
  */
-async function showHumanReadableRdf(rdf) {
+async function showRdf(rdf) {
   // validate args
   if(!isString(rdf))throw new TypeError('not a string');
 
@@ -28,9 +28,15 @@ async function showHumanReadableRdf(rdf) {
   // console.debug(`response`, response);
   if (!ok(response))return;
   if (response.body.documentType !== 'ontology')return;
-
+  
   // make ontology human-readable
-  showHumanReadableOntology(response.body);
+  if (response.body.ontologyType === 'rdfs') {
+    // console.debug(`rendering rdfs`);
+    showRdfsOntology(response.body);
+  } else if (response.body.ontologyType === 'owl') {
+    // console.debug(`rendering owl`);
+    showOwlOntology(response.body);
+  }
 }
 
 
@@ -38,8 +44,8 @@ async function showHumanReadableRdf(rdf) {
 
 // libraries //////////////////////////////////////////////////////
 
-function showHumanReadableOntology(viewModel) {
-  emptyOntologyPage();
+function showOwlOntology(viewModel) {
+  emptyOwlOntologyPage();
   const 
   ui = {
     title      : document.querySelector('.ontology-header > h1'),
@@ -57,24 +63,24 @@ function showHumanReadableOntology(viewModel) {
       badge    : document.querySelector('.ontology-section:nth-child(3) .badge'),
       tableBody: document.querySelector('.ontology-section:nth-child(3) .entity-table tbody'),
     },
-    predicates: {
+    objectProperties: {
       badge    : document.querySelector('.ontology-section:nth-child(4) .badge'),
       tableBody: document.querySelector('.ontology-section:nth-child(4) .entity-table tbody'),
     },
-    datatypes: {
+    datatypeProperties: {
       badge    : document.querySelector('.ontology-section:nth-child(5) .badge'),
       tableBody: document.querySelector('.ontology-section:nth-child(5) .entity-table tbody'),
     },
   };
   ui.vann.all.classList.remove('hide');
-  ui.title.innerText            = viewModel.title ?? 'An RDF Ontology';
-  ui.description.innerText      = viewModel.description ?? 'No description';
-  ui.vann.prefix.innerText      = viewModel.vann.prefix;
-  ui.vann.iri.innerText         = viewModel.vann.iri;
-  ui.prefixes.badge.innerText   = Object.entries(viewModel.prefixes).length;
-  ui.classes.badge.innerText    = Object.entries(viewModel.classes).length;
-  ui.predicates.badge.innerText = Object.entries(viewModel.predicates).length;
-  ui.datatypes.badge.innerText  = Object.entries(viewModel.datatypes).length;
+  ui.title.innerText                    = viewModel.title ?? 'An RDF Ontology';
+  ui.description.innerText              = viewModel.description ?? '';
+  ui.vann.prefix.innerText              = viewModel.vann.prefix;
+  ui.vann.iri.innerText                 = viewModel.vann.iri;
+  ui.prefixes.badge.innerText           = Object.entries(viewModel.prefixes).length;
+  ui.classes.badge.innerText            = Object.entries(viewModel.classes).length;
+  ui.objectProperties.badge.innerText   = Object.entries(viewModel.objectProperties).length;
+  ui.datatypeProperties.badge.innerText = Object.entries(viewModel.datatypeProperties).length;
 
   // console.debug('ui', ui);
 
@@ -101,8 +107,8 @@ function showHumanReadableOntology(viewModel) {
 
 
   // display classes, predicates and datatypes
-  const uis = [ui.classes, ui.predicates, ui.datatypes];
-  [viewModel.classes, viewModel.predicates, viewModel.datatypes].forEach(
+  const uis = [ui.classes, ui.objectProperties, ui.datatypeProperties];
+  [viewModel.classes, viewModel.objectProperties, viewModel.datatypeProperties].forEach(
     definitions => {
       const currentUi = uis.shift();
       for (const def of definitions) {
@@ -175,24 +181,7 @@ function showHumanReadableOntology(viewModel) {
   );
 }
 
-
-/**
- * 
- * @param {string} iri 
- * @param {Object.<string, string>} prefixes 
- * @return {string}
- */
-function prefixedIri(iri, prefixes) {
-  for (const [prefix, prefixIri] of Object.entries(prefixes)) {
-    if (iri.startsWith(prefixIri)) {
-      return `${prefix}:${iri.substring(prefixIri.length)}`;
-    }
-  }
-  return iri;
-}
-
-
-function emptyOntologyPage() {
+function emptyOwlOntologyPage() {
   // console.debug(`page init`);
   const styleTag = document.createElement('style');
   styleTag.textContent = `
@@ -357,118 +346,7 @@ function emptyOntologyPage() {
       background: var(--btn-bg-hover);
     }  
   `;
-  // styleTag.textContent = `
-  //   hide {display: none;}
-  //   body.ontology-body {
-  //     background-color: #f8fafc;
-  //     color: #0f172a;
-  //     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  //     margin: 0;
-  //     padding: 40px 20px;
-  //     line-height: 1.6;
-  //   }
-  //   .ontology-container {
-  //     max-width: 960px;
-  //     margin: 0 auto;
-  //     background: #ffffff;
-  //     padding: 32px;
-  //     border-radius: 12px;
-  //     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
-  //     border: 1px solid #e2e8f0;
-  //   }
-  //   .ontology-header {
-  //     border-bottom: 2px solid #e2e8f0;
-  //     padding-bottom: 16px;
-  //     margin-bottom: 24px;
-  //   }
-  //   .ontology-header h1 {
-  //     margin: 0 0 8px 0;
-  //     font-size: 28px;
-  //     color: #0284c7;
-  //   }
-  //   .ontology-header p {
-  //     margin: 0 0 12px 0;
-  //     color: #64748b;
-  //     font-size: 15px;
-  //   }
-  //   .vann-meta {
-  //     display: inline-flex;
-  //     gap: 16px;
-  //     background-color: #f0f9ff;
-  //     border: 1px solid #bae6fd;
-  //     padding: 8px 14px;
-  //     border-radius: 6px;
-  //     font-size: 13px;
-  //     color: #0369a1;
-  //   }
-  //   .ontology-section {
-  //     margin-bottom: 32px;
-  //   }
-  //   .ontology-section h2 {
-  //     font-size: 20px;
-  //     color: #1e293b;
-  //     border-bottom: 1px solid #f1f5f9;
-  //     padding-bottom: 8px;
-  //     margin-bottom: 16px;
-  //   }
-  //   .prefix-table, .entity-table {
-  //     width: 100%;
-  //     border-collapse: collapse;
-  //     margin-top: 8px;
-  //     font-size: 14px;
-  //   }
-  //   .prefix-table th, .prefix-table td,
-  //   .entity-table th, .entity-table td {
-  //     text-align: left;
-  //     padding: 10px 12px;
-  //     border-bottom: 1px solid #e2e8f0;
-  //   }
-  //   .prefix-table th, .entity-table th {
-  //     background-color: #f1f5f9;
-  //     color: #475569;
-  //     font-weight: 600;
-  //   }
-  //   .entity-iri {
-  //     font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
-  //     color: #0369a1;
-  //     font-size: 13px;
-  //   }
-  //   .badge {
-  //     display: inline-block;
-  //     padding: 2px 8px;
-  //     font-size: 12px;
-  //     font-weight: 600;
-  //     border-radius: 9999px;
-  //     background-color: #e0f2fe;
-  //     color: #0369a1;
-  //     margin-left: 8px;
-  //   }
-  //   .badge-vann {
-  //     background-color: #dcfce7;
-  //     color: #15803d;
-  //     margin-left: 6px;
-  //     padding: 1px 6px;
-  //     font-size: 10px;
-  //     text-transform: uppercase;
-  //     // &::after {content: 'VANN'}
-  //   }
-  //   .toggle-raw-btn {
-  //     position: fixed;
-  //     bottom: 20px;
-  //     right: 20px;
-  //     background: #0f172a;
-  //     color: #fff;
-  //     border: none;
-  //     padding: 10px 16px;
-  //     border-radius: 8px;
-  //     cursor: pointer;
-  //     font-weight: 500;
-  //     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  //   }
-  //   .toggle-raw-btn:hover {
-  //     background: #334155;
-  //   }
-  // `;
+
   document.head.appendChild(styleTag);
 
   const
@@ -490,7 +368,524 @@ function emptyOntologyPage() {
     },
     preferredNamespace: {
       en: 'Preferred namespace',
-      fr: 'Espace de nom préférée',
+      fr: 'Espace de nom préféré',
+      de: 'Bevorzugtes Namespace',
+      tr: 'Tercih edilen ad alanı',
+    },
+    declaredPrefixes: {
+      en: 'Prefixes',
+      fr: 'Préfixes',
+      de: 'Präfixe',
+      tr: 'Ön ekler',
+    },
+    prefix: {
+      en: 'Prefix',
+      fr: 'Préfixe',
+      de: 'Präfix',
+      tr: 'Ön ek',
+    },
+    namespaceIri: {
+      en: 'Namespace IRI',
+      fr: "IRI d'espace de noms",
+      de: 'IRI des Namespaces',
+      tr: "Ad alanının IRI'si",
+    },
+    classes: {
+      en: 'Classes',
+      fr: 'Classes',
+      de: 'Klassen',
+      tr: 'Sınıflar',
+    },
+    classNameIri: {
+      en: 'Class name / IRI',
+      fr: 'Nom de classe / IRI',
+      de: 'Klassenname / IRI',
+      tr: 'Sınıf ismi / IRI',
+    },
+    description: {
+      en: 'Description',
+      fr: 'Description',
+      de: 'Beschreibung',
+      tr: 'Açıklama',
+    },
+    objectProperties: {
+      en: 'Object properties',
+      fr: 'Propriétés - objets',
+      de: 'Objekt-Eigenschaften',
+      tr: 'Obje yüklemleri',
+    },
+    objectPropertyIri: {
+      en: 'Object property / IRI',
+      fr: 'Propriété - objet / IRI',
+      de: 'Objekt-Eigenschaft / IRI',
+      tr: 'Obje yüklemi / IRI',
+    },
+    datatypeProperties: {
+      en: 'Datatype properties',
+      fr: 'Propriétés - types de données',
+      de: 'Datenart-Eigenschaften',
+      tr: 'Veri türü yüklemleri',
+    },
+    datatypePropertyIri: {
+      en: 'Datatype / IRI',
+      fr: 'Propriété - type de données / IRI',
+      de: 'Datenart-Eigenschaft / IRI',
+      tr: 'Veri türü yüklemi / IRI',
+    },
+    viewRaw: {
+      en: 'View raw',
+      fr: "Voir l'original",
+      de: 'Ursprungliches Dokument sehen',
+      tr: 'Orijinal belgeyi görüntüle',
+    },
+    viewHtml: {
+      en: 'View as HTML document',
+      fr: 'Voir le HTML dérivé',
+      de: 'Abgeleitetes HTML sehen',
+      tr: "Türetilmiş HTML'yi görüntüle",
+    },
+  },
+  userLang  = navigator.language.split('-')[0].toLowerCase(),
+  userLangs = navigator.languages.map(l => l.split('-')[0].toLowerCase()),
+  // selectedLang = 'de';
+  // selectedLang = 'fr';
+  // selectedLang = `tr`;
+  selectedLang = l10nLangs.find(lang => lang === userLang) ?? userLangs.find(uLang => l10nLangs.find(lLang => lLang === uLang)) ?? l10nLangs[0];
+
+  document.body.className = 'ontology-body';
+  document.body.innerHTML = `
+    <div class="ontology-container">
+      <div class="ontology-header">
+        <h1></h1>
+        <p></p>
+        <div id='vann' class="vann-meta hide">
+          <span><strong>${l10n.preferredPrefix[selectedLang]}</strong>: <code class='vann-prefix'></code></span>
+          <span><strong>${l10n.preferredNamespace[selectedLang]}</strong>: <code class='vann-iri'></code></span>
+        </div>
+      </div>
+
+      <!-- Prefixes Section -->
+      <div class="ontology-section">
+        <h2>${l10n.declaredPrefixes[selectedLang]} <span class="badge"></span></h2>
+        <table class="prefix-table">
+          <thead>
+            <tr><th>${l10n.prefix[selectedLang]}</th><th>${l10n.namespaceIri[selectedLang]}</th></tr>
+          </thead>
+          <tbody>
+          <!--
+            <tr>
+              <td>
+                <strong></strong> <span class="badge-vann"></span>
+              </td>
+              <td class="entity-iri"></td>
+            </tr>
+          -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Classes Section -->
+      <div class="ontology-section">
+        <h2>${l10n.classes[selectedLang]} <span class="badge"></span></h2>
+        <table class="entity-table">
+          <thead>
+            <tr><th>${l10n.classNameIri[selectedLang]}</th><th>${l10n.description[selectedLang]}</th></tr>
+          </thead>
+          <tbody>
+            <!--
+              <tr>
+                <td>
+                  <strong></strong><br/>
+                  <span class="entity-iri"></span>
+                </td>
+                <td></td>
+              </tr>
+            -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Predicates Section -->
+        <div class="ontology-section">
+          <h2>${l10n.objectProperties[selectedLang]} <span class="badge"></span></h2>
+          <table class="entity-table">
+            <thead>
+              <tr><th>${l10n.objectPropertyIri[selectedLang]}</th><th>${l10n.description[selectedLang]}</th></tr>
+            </thead>
+            <tbody>
+              <!--
+                <tr>
+                  <td>
+                    <strong></strong><br/>
+                    <span class="entity-iri"></span>
+                  </td>
+                  <td></td>
+                </tr>
+              -->
+            </tbody>
+          </table>
+        </div>
+
+      <!-- Datatypes Section -->
+        <div class="ontology-section">
+          <h2>${l10n.datatypeProperties[selectedLang]} <span class="badge"></span></h2>
+          <table class="entity-table">
+            <thead>
+              <tr><th>${l10n.datatypePropertyIri[selectedLang]}</th><th>Description</th></tr>
+            </thead>
+            <tbody>
+              <!--
+                <tr>
+                  <td>
+                    <strong></strong><br/>
+                    <span class="entity-iri"></span>
+                  </td>
+                  <td></td>
+                </tr>
+              -->
+            </tbody>
+          </table>
+        </div>
+    </div>
+
+    <button class="toggle-raw-btn" id="toggleRawBtn">${l10n.viewRaw[selectedLang]}</button>
+  `;
+
+  let showingRaw = false;
+  document.getElementById('toggleRawBtn').addEventListener('click', () => {
+    showingRaw = !showingRaw;
+    if (showingRaw) {
+      document.body.innerHTML = `<pre style="white-space: pre-wrap; word-break: break-all; padding: 20px; font-family: monospace;">${rawText.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre><button class="toggle-raw-btn" id="toggleRawBtn">${l10n.viewHtml[selectedLang]}</button>`;
+      document.getElementById('toggleRawBtn').addEventListener('click', () => location.reload());
+    }
+  });
+}
+
+function showRdfsOntology(viewModel) {
+  emptyRdfsOntologyPage();
+  const 
+  ui = {
+    title      : document.querySelector('.ontology-header > h1'),
+    description: document.querySelector('.ontology-header > p'),
+    vann: {
+      all:  document.querySelector('#vann'),
+      prefix: document.querySelector('.vann-prefix'),
+      iri   : document.querySelector('.vann-iri'),
+    },
+    prefixes: {
+      badge    : document.querySelector('.ontology-section:nth-child(2) .badge'),
+      tableBody: document.querySelector('.ontology-section:nth-child(2) .prefix-table'),
+    },
+    classes: {
+      badge    : document.querySelector('.ontology-section:nth-child(3) .badge'),
+      tableBody: document.querySelector('.ontology-section:nth-child(3) .entity-table tbody'),
+    },
+    predicates: {
+      badge    : document.querySelector('.ontology-section:nth-child(4) .badge'),
+      tableBody: document.querySelector('.ontology-section:nth-child(4) .entity-table tbody'),
+    },
+    datatypes: {
+      badge    : document.querySelector('.ontology-section:nth-child(5) .badge'),
+      tableBody: document.querySelector('.ontology-section:nth-child(5) .entity-table tbody'),
+    },
+  };
+  ui.vann.all.classList.remove('hide');
+  ui.title.innerText            = viewModel.title ?? 'An RDF Ontology';
+  ui.description.innerText      = viewModel.description ?? '';
+  ui.vann.prefix.innerText      = viewModel.vann.prefix;
+  ui.vann.iri.innerText         = viewModel.vann.iri;
+  ui.prefixes.badge.innerText   = Object.entries(viewModel.prefixes).length;
+  ui.classes.badge.innerText    = Object.entries(viewModel.classes).length;
+  ui.predicates.badge.innerText = Object.entries(viewModel.predicates).length;
+  ui.datatypes.badge.innerText  = Object.entries(viewModel.datatypes).length;
+
+  // console.debug('ui', ui);
+
+  // display prefixes
+  for (const [prefix, iri] of Object.entries(viewModel.prefixes)) {
+    // console.debug(prefix, '→', iri);
+    // console.debug(ui.prefixes);
+    const entry = document.createElement('tr');
+    ui.prefixes.tableBody.append(entry);
+    entry.innerHTML = `
+      <td>
+        <strong></strong>
+      </td>
+      <td class="entity-iri"></td>
+    `;
+    const 
+    ui2 = {
+      prefix: entry.querySelector('strong'),
+      iri   : entry.querySelector('.entity-iri'),
+    };
+    ui2.prefix.innerText = prefix;
+    ui2.iri.innerText = iri;
+  }
+
+
+  // display classes, predicates and datatypes
+  const uis = [ui.classes, ui.predicates, ui.datatypes];
+  [viewModel.classes, viewModel.predicates, viewModel.datatypes].forEach(
+    definitions => {
+      const currentUi = uis.shift();
+      for (const def of definitions) {
+        const entry = document.createElement('tr');
+        currentUi.tableBody.append(entry);
+        entry.innerHTML = `
+          <td>
+            <strong></strong><br/>
+            <span class="entity-iri"></span>
+          </td>
+          <td></td>
+        `;
+        const 
+        ui2 = {
+          label      : entry.querySelector('strong'),
+          iri        : entry.querySelector('.entity-iri'),
+          description: entry.querySelector('td:nth-child(2)')
+        };
+        ui2.iri.innerText = prefixedIri(def.iri, viewModel.prefixes);
+        if(def.label)ui2.label.innerText = def.label;
+
+        if (def.description) {
+          const descrP = document.createElement('p');
+          descrP.innerText = def.description;
+          ui2.description.append(descrP);
+        }
+
+        // predicate?
+        if (def.domain && (def.domain.length > 0 || def.range.length > 0)) {
+          // ui2.description.append(document.createElement('br'));
+
+          // display domains
+          if (def.domain.length > 0) {
+            const 
+            p = document.createElement('p'),
+            title = document.createElement('em');
+            title.innerText = 'Domain: ';
+            p.append(title);
+
+            for (const iri of def.domain) {
+              const iriSpan = document.createElement('span');
+              iriSpan.classList.add('entity-iri');
+              iriSpan.innerText = prefixedIri(iri, viewModel.prefixes);
+              p.append(iriSpan);
+              p.append(document.createTextNode(' '));
+            }
+            ui2.description.append(p);
+          }
+
+          // display ranges
+          if (def.range.length > 0) {
+            const p = document.createElement('p');
+            title = document.createElement('em');
+            title.innerText = 'Range: ';
+            p.append(title);
+
+            for (const iri of def.range) {
+              const iriSpan = document.createElement('span');
+              iriSpan.classList.add('entity-iri');
+              iriSpan.innerText = prefixedIri(iri, viewModel.prefixes);
+              p.append(iriSpan);
+              p.append(document.createTextNode(' '));
+            }
+            ui2.description.append(p);
+          }
+          
+        }
+      }
+    }
+  );
+}
+
+function emptyRdfsOntologyPage() {
+  // console.debug(`page init`);
+  const styleTag = document.createElement('style');
+  styleTag.textContent = `
+    hide {display: none;}
+    body.ontology-body {
+      --bg: #f8fafc;
+      --text: #0f172a;
+      --surface: #ffffff;
+      --border: #e2e8f0;
+      --border-soft: #f1f5f9;
+      --heading: #1e293b;
+      --muted: #64748b;
+      --accent: #0284c7;
+      --accent-deep: #0369a1;
+      --accent-bg: #f0f9ff;
+      --accent-border: #bae6fd;
+      --th-bg: #f1f5f9;
+      --th-text: #475569;
+      --badge-bg: #e0f2fe;
+      --green-bg: #dcfce7;
+      --green-text: #15803d;
+      --btn-bg: #0f172a;
+      --btn-bg-hover: #334155;
+      --btn-text: #fff;
+      --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+      --btn-shadow: 0 4px 12px rgba(0,0,0,0.15);
+
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      margin: 0;
+      padding: 40px 20px;
+      line-height: 1.6;
+    }
+
+    /* Dark mode */
+    @media (prefers-color-scheme: dark) {
+      body.ontology-body {
+        --bg: #0b1120;
+        --text: #e2e8f0;
+        --surface: #111a2e;
+        --border: #1e293b;
+        --border-soft: #1e293b;
+        --heading: #f1f5f9;
+        --muted: #94a3b8;
+        --accent: #38bdf8;
+        --accent-deep: #7dd3fc;
+        --accent-bg: #0c2340;
+        --accent-border: #0c4a6e;
+        --th-bg: #1e293b;
+        --th-text: #cbd5e1;
+        --badge-bg: #082f49;
+        --green-bg: #052e16;
+        --green-text: #86efac;
+        --btn-bg: #e2e8f0;
+        --btn-bg-hover: #cbd5e1;
+        --btn-text: #0f172a;
+        --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -2px rgba(0, 0, 0, 0.4);
+        --btn-shadow: 0 4px 12px rgba(0,0,0,0.5);
+      }
+    }
+
+    .ontology-container {
+      max-width: 960px;
+      margin: 0 auto;
+      background: var(--surface);
+      padding: 32px;
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+    }
+    .ontology-header {
+      border-bottom: 2px solid var(--border);
+      padding-bottom: 16px;
+      margin-bottom: 24px;
+    }
+    .ontology-header h1 {
+      margin: 0 0 8px 0;
+      font-size: 28px;
+      color: var(--accent);
+    }
+    .ontology-header p {
+      margin: 0 0 12px 0;
+      color: var(--muted);
+      font-size: 15px;
+    }
+    .vann-meta {
+      display: inline-flex;
+      gap: 16px;
+      background-color: var(--accent-bg);
+      border: 1px solid var(--accent-border);
+      padding: 8px 14px;
+      border-radius: 6px;
+      font-size: 13px;
+      color: var(--accent-deep);
+    }
+    .ontology-section {
+      margin-bottom: 32px;
+    }
+    .ontology-section h2 {
+      font-size: 20px;
+      color: var(--heading);
+      border-bottom: 1px solid var(--border-soft);
+      padding-bottom: 8px;
+      margin-bottom: 16px;
+    }
+    .prefix-table, .entity-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 8px;
+      font-size: 14px;
+    }
+    .prefix-table th, .prefix-table td,
+    .entity-table th, .entity-table td {
+      text-align: left;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .prefix-table th, .entity-table th {
+      background-color: var(--th-bg);
+      color: var(--th-text);
+      font-weight: 600;
+    }
+    .entity-iri {
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      color: var(--accent-deep);
+      font-size: 13px;
+    }
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      font-size: 12px;
+      font-weight: 600;
+      border-radius: 9999px;
+      background-color: var(--badge-bg);
+      color: var(--accent-deep);
+      margin-left: 8px;
+    }
+    .badge-vann {
+      background-color: var(--green-bg);
+      color: var(--green-text);
+      margin-left: 6px;
+      padding: 1px 6px;
+      font-size: 10px;
+      text-transform: uppercase;
+      // &::after {content: 'VANN'}
+    }
+    .toggle-raw-btn {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: var(--btn-bg);
+      color: var(--btn-text);
+      border: none;
+      padding: 10px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 500;
+      box-shadow: var(--btn-shadow);
+    }
+    .toggle-raw-btn:hover {
+      background: var(--btn-bg-hover);
+    }  
+  `;
+
+  document.head.appendChild(styleTag);
+
+  const
+  /**
+   * The localisation languages for the HTML template. The first is the default.
+   */
+  l10nLangs = ['en', 'fr', 'de', 'tr'],
+
+  /** 
+   * Localised template strings.
+   * @see {@link https://www.emse.fr/~zimmermann/W3C/glossaire.html | Glossaire français-anglais pour les concepts de RDF 1.1} 
+   **/
+  l10n = {
+    preferredPrefix: {
+      en: 'Preferred prefix',
+      fr: 'Préfixe préférée',
+      de: 'Bevorzugtes Präfix',
+      tr: 'Tercih edilen ön ek',
+    },
+    preferredNamespace: {
+      en: 'Preferred namespace',
+      fr: 'Espace de nom préféré',
       de: 'Bevorzugtes Namespace',
       tr: 'Tercih edilen ad alanı',
     },
@@ -540,12 +935,13 @@ function emptyOntologyPage() {
       en: 'Predicate / IRI',
       fr: 'Prédicat / IRI',
       de: 'Eigenschaft / IRI',
+      tr: 'Veri türü',
     },
     datatypes: {
       en: 'Datatypes',
       fr: 'Types de données',
       de: 'Datenarten',
-      tr: 'Veri türüleri',
+      tr: 'Veri türleri',
     },
     datatypeIri: {
       en: 'Datatype / IRI',
@@ -698,6 +1094,23 @@ function isRdf(contentType) {
     ) ? true : false
   );
 }
+
+
+/**
+ * 
+ * @param {string} iri 
+ * @param {Object.<string, string>} prefixes 
+ * @return {string}
+ */
+function prefixedIri(iri, prefixes) {
+  for (const [prefix, prefixIri] of Object.entries(prefixes)) {
+    if (iri.startsWith(prefixIri)) {
+      return `${prefix}:${iri.substring(prefixIri.length)}`;
+    }
+  }
+  return iri;
+}
+
 
 
 /**
