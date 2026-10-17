@@ -27,4 +27,8 @@ function isEmptyString(val) {
   return isString(val) && val.length === 0;
 }
 
-export {isNull, isUndefined, isArray, isPlainObject, isString, isEmptyString};
+function isEmptyArray(val) {
+  return isArray(val) && val.length === 0;
+}
+
+export {isNull, isUndefined, isArray, isPlainObject, isString, isEmptyString, isEmptyArray};

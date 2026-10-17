@@ -26,6 +26,7 @@ rdfs    = iri`http://www.w3.org/2000/01/rdf-schema#`,
 vann    = iri`http://purl.org/vocab/vann/`,
 dcterms = iri`http://purl.org/dc/terms/`,
 skos    = iri`http://www.w3.org/2004/02/skos/core#`,
+qrmm    = iri`https://vocab.qworum.net/qrmm.ttl#`,
 
 
 /**
@@ -143,6 +144,7 @@ function selectUserLiteral(dataset) {
   }
 }
 
+
 /**
  * 
  * @param {string} prefix
@@ -166,7 +168,7 @@ function isTerm(term) {
     isPlainObject(term) && 
     [
       'NamedNode', 'BlankNode', 'Literal', 'Variable', 'DefaultGraph', 
-      'Quad' // should have been another term type named 'Triple' for triple-terms; 'Quad' is unsuitable for triple-terms
+      'Quad', 'Triple' // should have been another term type named 'Triple' for triple-terms; 'Quad' is unsuitable for triple-terms
     ].includes(term.termType) && 
     isString(term.value) 
   );
@@ -275,7 +277,7 @@ function isDefaultGraph(term) {
  */
 function isQuad(term) {
   return (
-    isTerm(term) && term.termType === 'Quad' && isEmptyString(term.value) &&
+    isTerm(term) && ['Quad', 'Triple'].includes(term.termType) && isEmptyString(term.value) &&
     // subject
     (isNamedNode(term.subject) || isBlankNode(term.subject) || isQuad(term.subject)) &&
     // predicate
@@ -287,10 +289,10 @@ function isQuad(term) {
   );
 }
 
-
+const isTriple = isQuad;
 
 export { 
   parseRdf, t, selectUserLiteral, isPrefix,
-  owl, rdf, rdfs, vann, dcterms, skos,
-  isTerm, isNamedNode, isBlankNode, isDefaultGraph, isQuad,
+  owl, rdf, rdfs, vann, dcterms, skos, qrmm,
+  isTerm, isNamedNode, isBlankNode, isLiteral, isDefaultGraph, isQuad, isTriple,
 };

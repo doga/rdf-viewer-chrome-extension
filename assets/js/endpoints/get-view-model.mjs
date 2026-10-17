@@ -48,7 +48,7 @@ async function getViewModel(args) {
 
   const viewModel = (
     meta.documentType === 'dataset'
-    ? readNonOntologyDataset(dataset, prefixes)
+    ? await readNonOntologyDataset(dataset, prefixes)
     : (
       meta.ontologyType === 'owl'
       ? readOwlOntology(dataset, meta)

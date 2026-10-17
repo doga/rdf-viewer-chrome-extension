@@ -104,7 +104,8 @@ function showNonOntologyDataset(viewModel) {
   }
 
   // display statements
-  for (const statement of viewModel.statements) {
+  for (let index = 0; index < viewModel.statements.length; index++) {
+    const statement = viewModel.statements[index];
     if ([`${qrmm}begin`, `${qrmm}end`].includes(statement.predicate.value))continue;
     if(['Quad', 'Triple'].includes(statement.subject.termType))continue;
 
@@ -112,10 +113,17 @@ function showNonOntologyDataset(viewModel) {
     ui.statements.tableBody.append(entry);
     entry.innerHTML = `
       <td>
+        <strong></strong><br /><span></span>
       </td>
     `;
+    const statementUi = {
+      prose: entry.querySelector('strong'),
+      rdf  : entry.querySelector('span'),
+    }
 
-    renderStatement(statement, entry.querySelector('td'), viewModel.prefixes);
+    const prose = viewModel.prose[index];
+    if(prose)statementUi.prose.innerText = prose;
+    renderStatement(statement, statementUi.rdf, viewModel.prefixes);
   }
 }
 
