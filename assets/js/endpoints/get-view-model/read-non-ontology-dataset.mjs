@@ -24,17 +24,16 @@ async function readNonOntologyDataset(dataset, prefixes) {
   datasetDictionary = new Dictionary([dataset]),
   viewModel  = { documentType: 'dataset', prefixes, statements: [], prose: [] };
   console.debug(`[readNonOntologyDataset] defaultDictionary`,defaultDictionary.size);
-  console.debug(`[readNonOntologyDataset] datasetDictionary`,datasetDictionary.size);
+  console.debug(`[readNonOntologyDataset] datasetDictionary`,datasetDictionary);
   
   for (const statement of dataset) {
+    // display the statement
     viewModel.statements.push(statement);
-    console.debug(`[readNonOntologyDataset] 3`);
+
+    // display the prose
     const prose = proseOf(statement, defaultDictionary, datasetDictionary);
-    console.debug(`[readNonOntologyDataset] 31`);
     viewModel.prose.push(prose ? `${prose}.` : null);
   }
-
-  console.debug(`[readNonOntologyDataset] viewModel`, viewModel);
 
   return viewModel;
 }
@@ -50,13 +49,16 @@ async function readNonOntologyDataset(dataset, prefixes) {
 function proseOf(term, defaultDictionary, datasetDictionary) {
   console.debug(`[proseOf] term`, term);
   if (isQuad(term)) {
-    console.debug(`[proseOf] quad`);
-    const prose = {
+    // console.debug(`[proseOf] quad`);
+    const 
+    prosePlaceholder = '⍁⍁⍁', // TODO use plain RDF instead
+    // prosePlaceholder = '❓',
+    prose = {
       subject  : proseOf(term.subject, defaultDictionary, datasetDictionary),
       predicate: proseOf(term.predicate, defaultDictionary, datasetDictionary),
       object   : proseOf(term.object, defaultDictionary, datasetDictionary),
     };
-    console.debug(`[proseOf] quad prose ❝`,prose.subject, prose.predicate, prose.object, '❞');
+    // console.debug(`[proseOf] quad prose ❝`,prose.subject, prose.predicate, prose.object, '❞');
     // if (prose.subject && prose.predicate && prose.object) {
     //   if (isTriple(term.subject)) {
     //     return `${prose.subject}; this ${prose.predicate} ${prose.object}`;
@@ -67,19 +69,19 @@ function proseOf(term, defaultDictionary, datasetDictionary) {
     //   return null;
     // }
     if (!prose.subject && !prose.predicate && !prose.object)return null;
-    if (isTriple(term.subject)) {
-      return `${prose.subject ?? '❓'}; this ${prose.predicate ?? '❓'} ${prose.object ?? '❓'}`;
+    if (isTriple(term.subject)) { // TODO replace "; this" I18N BUG
+      return `${prose.subject ?? prosePlaceholder}; this ${prose.predicate ?? prosePlaceholder} ${prose.object ?? prosePlaceholder}`;
     } else {
-      return `${prose.subject ?? '❓'} ${prose.predicate ?? '❓'} ${prose.object ?? '❓'}`;
+      return `${prose.subject ?? prosePlaceholder} ${prose.predicate ?? prosePlaceholder} ${prose.object ?? prosePlaceholder}`;
     }
   } else if(isNamedNode(term)) {
-    console.debug(`[proseOf] named node`);
-    return defaultDictionary.lookup(term);
+    // console.debug(`[proseOf] named node`);
+    return (datasetDictionary.lookup(term) || defaultDictionary.lookup(term));
   } else if(isBlankNode(term)) {
-    console.debug(`[proseOf] blank node`);
+    // console.debug(`[proseOf] blank node`);
     return datasetDictionary.lookup(term);
   } else if(isLiteral(term)) {
-    console.debug(`[proseOf] literal`);
+    // console.debug(`[proseOf] literal`);
     return term.value;
   }
   return null;

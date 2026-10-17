@@ -1,12 +1,13 @@
 import { 
   parseRdf, t, 
   isLiteral, isNamedNode, isTerm,
-  qrmm,
+  qrmm, foaf, schema,
 } from "./utils/rdf-utils.mjs";
 import { Store } from "./pulled-in/N3.js/v2.13.12/n3.esm.min.js";
 // import { iri, IRI } from "./pulled-in/IRI/3.1.6/mod.mjs";
 import { LanguageTag, langTag } from "./pulled-in/language/1.2.0/mod.mjs";
 import { userLang } from "./utils/user-lang.mjs";
+// import { isArray } from "./utils/js-utils.mjs";
 
 
 class Dictionary {
@@ -31,6 +32,7 @@ class Dictionary {
    * @see {@link https://rdf.js.org/dataset-spec/#dataset-interface | Dataset interface}
    */
   constructor(datasets){
+    console.debug(`Dict new`);
     if (datasets) {
       for (const ds of datasets)this.add(ds);
     }
@@ -41,9 +43,17 @@ class Dictionary {
    * @see {@link https://rdf.js.org/dataset-spec/#dataset-interface | Dataset interface}
    */
   add(dataset){
-    // console.debug(`add(dataset) ${dataset.size}`);
-    // find prose statements in dataset
-    for (const statement of dataset.match(null, t.namedNode(`${qrmm}prose`))){
+    console.debug(`add(dataset) ${dataset.size}`);
+    // find prose statements in dataset. USE ALSO foaf:name etc.
+    const
+    qrmmProseDs       = dataset.match(null, t.namedNode(`${qrmm}prose`)),
+    foafNameDs        = dataset.match(null, t.namedNode(`${foaf}name`)),
+    schemaNameDs      = dataset.match(null, t.namedNode(`${schema}name`)),
+    schemaGivenNameDs = dataset.match(null, t.namedNode(`${schema}givenName`)),
+    matchDs           = qrmmProseDs.union(foafNameDs).union(schemaNameDs).union(schemaGivenNameDs);
+    console.debug(`matchDs`,matchDs);
+
+    for (const statement of matchDs){
       if (isNamedNode(statement.subject) && isLiteral(statement.object)) {
         // console.debug(`add(dataset)`,dataset);
         // init dictionary entry for subject's IRI

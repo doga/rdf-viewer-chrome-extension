@@ -26,6 +26,8 @@ rdfs    = iri`http://www.w3.org/2000/01/rdf-schema#`,
 vann    = iri`http://purl.org/vocab/vann/`,
 dcterms = iri`http://purl.org/dc/terms/`,
 skos    = iri`http://www.w3.org/2004/02/skos/core#`,
+foaf    = iri`http://xmlns.com/foaf/0.1/`,
+schema  = iri`https://schema.org/`,
 qrmm    = iri`https://vocab.qworum.net/qrmm.ttl#`,
 
 
@@ -293,6 +295,6 @@ const isTriple = isQuad;
 
 export { 
   parseRdf, t, selectUserLiteral, isPrefix,
-  owl, rdf, rdfs, vann, dcterms, skos, qrmm,
+  owl, rdf, rdfs, vann, dcterms, skos, foaf, schema, qrmm,
   isTerm, isNamedNode, isBlankNode, isLiteral, isDefaultGraph, isQuad, isTriple,
 };
