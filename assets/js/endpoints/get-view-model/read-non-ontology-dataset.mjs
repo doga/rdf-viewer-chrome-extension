@@ -1,6 +1,6 @@
 import { rdf,  } from "../../utils/rdf-utils.mjs";
 import {
-  createDefaultDictionary, Dictionary
+  Dictionary
 } from "../../rdf-to-human-dictionary.mjs";
 
 import { isTerm, isNamedNode, isBlankNode, isLiteral, isDefaultGraph, isQuad, isTriple } from "../../utils/rdf-utils.mjs";
@@ -17,21 +17,28 @@ import { isTerm, isNamedNode, isBlankNode, isLiteral, isDefaultGraph, isQuad, is
  * @see {@link https://rdf.js.org/data-model-spec/#quad-interface | Quad interface}
  */
 async function readNonOntologyDataset(dataset, prefixes) {
-  console.debug(`[readNonOntologyDataset]`);
+  console.debug(`[readNonOntologyDataset] built-in translations:`, Dictionary.builtinTranslations);
   prefixes['rdf'] = `${rdf}`;
+
+  // create a dictionary which includes only the translations that are relevant for this dataset.
   const 
-  defaultDictionary = await createDefaultDictionary(),
-  datasetDictionary = new Dictionary([dataset]),
-  viewModel  = { documentType: 'dataset', prefixes, statements: [], prose: [] };
-  console.debug(`[readNonOntologyDataset] defaultDictionary`,defaultDictionary.size);
-  console.debug(`[readNonOntologyDataset] datasetDictionary`,datasetDictionary);
+  prefixNames = Object.entries(prefixes).map(arr => arr[0]),
+  dictionary  = new Dictionary();
   
+  await dictionary.addTranslations(prefixNames);
+  dictionary.addDataset(dataset);
+  console.debug(`[readNonOntologyDataset] dictionary`, prefixNames,dictionary.size, dictionary);
+  
+  // build the view modal
+  const viewModel = { documentType: 'dataset', prefixes, statements: [], prose: [] };
   for (const statement of dataset) {
     // display the statement
     viewModel.statements.push(statement);
 
     // display the prose
-    const prose = proseOf(statement, defaultDictionary, datasetDictionary);
+    /** @type {?string} */
+    const prose = proseOf(statement, dictionary);
+
     viewModel.prose.push(prose ? `${prose}.` : null);
   }
 
@@ -42,11 +49,10 @@ async function readNonOntologyDataset(dataset, prefixes) {
 /**
  * 
  * @param {Object} term 
- * @param {Object} defaultDictionary 
- * @param {Object} datasetDictionary 
+ * @param {Object} dictionary 
  * @returns {?string}
  */
-function proseOf(term, defaultDictionary, datasetDictionary) {
+function proseOf(term, dictionary) {
   console.debug(`[proseOf] term`, term);
   if (isQuad(term)) {
     // console.debug(`[proseOf] quad`);
@@ -54,9 +60,9 @@ function proseOf(term, defaultDictionary, datasetDictionary) {
     prosePlaceholder = '⍁⍁⍁', // TODO use plain RDF instead
     // prosePlaceholder = '❓',
     prose = {
-      subject  : proseOf(term.subject, defaultDictionary, datasetDictionary),
-      predicate: proseOf(term.predicate, defaultDictionary, datasetDictionary),
-      object   : proseOf(term.object, defaultDictionary, datasetDictionary),
+      subject  : proseOf(term.subject, dictionary),
+      predicate: proseOf(term.predicate, dictionary),
+      object   : proseOf(term.object, dictionary),
     };
     // console.debug(`[proseOf] quad prose ❝`,prose.subject, prose.predicate, prose.object, '❞');
     // if (prose.subject && prose.predicate && prose.object) {
@@ -76,10 +82,10 @@ function proseOf(term, defaultDictionary, datasetDictionary) {
     }
   } else if(isNamedNode(term)) {
     // console.debug(`[proseOf] named node`);
-    return (datasetDictionary.lookup(term) || defaultDictionary.lookup(term));
+    return dictionary.lookup(term);
   } else if(isBlankNode(term)) {
     // console.debug(`[proseOf] blank node`);
-    return datasetDictionary.lookup(term);
+    return dictionary.lookup(term);
   } else if(isLiteral(term)) {
     // console.debug(`[proseOf] literal`);
     return term.value;
