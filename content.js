@@ -25,7 +25,7 @@ async function showRdf(rdf) {
     body    : {rdf},
   },
   response = await chrome.runtime.sendMessage(request);
-  console.debug(`response`, response);
+  // console.debug(`response`, response);
   if (!ok(response))return;
 
   switch (response.body.documentType) {
@@ -61,7 +61,7 @@ async function showRdf(rdf) {
  * @param {{documentType: string, prefixes: Object.<string, string>, statements: Object[]}} viewModel
  */
 function showNonOntologyDataset(viewModel) {
-  console.debug(`non-ontology dataset`);
+  // console.debug(`non-ontology dataset`);
   emptyNonOntologyDatasetPage();
   const 
   foaf   = 'http://xmlns.com/foaf/0.1/',

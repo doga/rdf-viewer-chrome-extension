@@ -17,7 +17,7 @@ import { isTerm, isNamedNode, isBlankNode, isLiteral, isDefaultGraph, isQuad, is
  * @see {@link https://rdf.js.org/data-model-spec/#quad-interface | Quad interface}
  */
 async function readNonOntologyDataset(dataset, prefixes) {
-  console.debug(`[readNonOntologyDataset] built-in translations:`, Dictionary.builtinTranslations);
+  // console.debug(`[readNonOntologyDataset] built-in translations:`, Dictionary.builtinTranslations);
   prefixes['rdf'] = `${rdf}`;
 
   // create a dictionary which includes only the translations that are relevant for this dataset.
@@ -27,7 +27,7 @@ async function readNonOntologyDataset(dataset, prefixes) {
   
   await dictionary.addTranslations(prefixNames);
   dictionary.addDataset(dataset);
-  console.debug(`[readNonOntologyDataset] dictionary`, prefixNames,dictionary.size, dictionary);
+  // console.debug(`[readNonOntologyDataset] dictionary`, prefixNames,dictionary.size, dictionary);
   
   // build the view modal
   const viewModel = { documentType: 'dataset', prefixes, statements: [], prose: [] };
@@ -53,10 +53,11 @@ async function readNonOntologyDataset(dataset, prefixes) {
  * @returns {?string}
  */
 function proseOf(term, dictionary) {
-  console.debug(`[proseOf] term`, term);
+  // console.debug(`[proseOf] term`, term);
   if (isQuad(term)) {
     // console.debug(`[proseOf] quad`);
     const 
+    snippetMarker = {sha256: '070ffe9fe882ac061af035500765d81f758c267041f9c4de434d8fd02b088b9b', cleartext: 'rdf viewer chrome extension'},
     prosePlaceholder = '⍁⍁⍁', // TODO use plain RDF instead
     // prosePlaceholder = '❓',
     prose = {
@@ -76,7 +77,7 @@ function proseOf(term, dictionary) {
     // }
     if (!prose.subject && !prose.predicate && !prose.object)return null;
     if (isTriple(term.subject)) { // TODO replace "; this" I18N BUG
-      return `${prose.subject ?? prosePlaceholder}; this ${prose.predicate ?? prosePlaceholder} ${prose.object ?? prosePlaceholder}`;
+      return `${prose.subject ?? prosePlaceholder}; {${snippetMarker.sha256}❖this❖} ${prose.predicate ?? prosePlaceholder} ${prose.object ?? prosePlaceholder}`;
     } else {
       return `${prose.subject ?? prosePlaceholder} ${prose.predicate ?? prosePlaceholder} ${prose.object ?? prosePlaceholder}`;
     }

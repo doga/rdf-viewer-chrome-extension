@@ -12,7 +12,7 @@ import {
  * @async
  */
 function readRdfsOntology(dataset, meta) {
-  console.debug(`rdfs ontology`);
+  // console.debug(`rdfs ontology`);
   const
   /** @see {@link https://rdf.js.org/dataset-spec/#dataset-interface | Dataset interface} */
   classesDs = dataset.match(null, t.namedNode(`${rdf}type`), t.namedNode(`${rdfs}Class`)),

@@ -167,7 +167,7 @@ class Dictionary {
    * @see {@link https://rdf.js.org/dataset-spec/#dataset-interface | Dataset interface}
    */
   constructor(datasets){
-    console.debug(`Dict new`);
+    // console.debug(`Dict new`);
     if (datasets) {
       for (const ds of datasets)this.addDataset(ds);
     }
@@ -194,10 +194,10 @@ class Dictionary {
    * @see {@link https://rdf.js.org/dataset-spec/#dataset-interface | Dataset interface}
    */
   addDataset(dataset, isOntology){
-    console.debug(`add(dataset) ${dataset.size}`,dataset);
+    // console.debug(`add(dataset) ${dataset.size}`,dataset);
 
     const translationDs = dataset.match(null, t.namedNode(`${qrmm}prose`));
-    console.debug(`[addDataset] translationDs`,translationDs.size,translationDs);
+    // console.debug(`[addDataset] translationDs`,translationDs.size,translationDs);
 
     if (!isOntology) {
       const
@@ -207,7 +207,7 @@ class Dictionary {
 
       translationDs.addAll(foafNameDs.union(schemaNameDs).union(schemaGivenNameDs));
     }
-    console.debug(`[addDataset] translationDs _`,translationDs.size,translationDs);
+    // console.debug(`[addDataset] translationDs _`,translationDs.size,translationDs);
 
     for (const statement of translationDs){
       if (isNamedNode(statement.subject) && isLiteral(statement.object)) {
@@ -242,10 +242,10 @@ class Dictionary {
     /** @type {?string} */
     const translation = translations[prefix] ?? null; 
     if(!translation){
-      console.debug(`translation not found for "${prefix}"`);
+      // console.debug(`translation not found for "${prefix}"`);
       return;
     }
-    console.debug(`adding translation for`,prefix);
+    // console.debug(`adding translation for`,prefix);
     const dataset = new Store((await parseRdf(translation)).quads);
     this.addDataset(dataset, true);
   }
@@ -258,7 +258,7 @@ class Dictionary {
    * @see {@link https://rdf.js.org/data-model-spec/#namednode-interface | NamedNode interface}
    */
   lookup(term){
-    console.debug(`[lookup]`,term);
+    // console.debug(`[lookup]`,term);
     if(!isNamedNode(term))return null;
     const dictEntry = this.#dict[term.value];
     if (dictEntry) {
@@ -273,10 +273,8 @@ class Dictionary {
 
       translationToHumanLang = dictEntry[selectedLangTag ? `${selectedLangTag}` : ''] ?? null;
 
-      console.debug(`[lookup] returning`,translationToHumanLang);
       return translationToHumanLang;
     } else {
-      console.debug(`[lookup] returning null`);
       return null;
     }
   }

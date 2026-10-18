@@ -46,8 +46,6 @@ async function getViewModel(args) {
     meta.prefixes              = prefixes;
   }
 
-  console.debug(`[getViewModel] meta.documentType`,meta.documentType);
-
   const viewModel = (
     meta.documentType === 'dataset'
     ? await readNonOntologyDataset(dataset, prefixes)
