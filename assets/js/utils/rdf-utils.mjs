@@ -10,6 +10,12 @@ import { isNull, isUndefined, isPlainObject, isString, isEmptyString } from "./j
 
 
 const 
+/**
+ * A parser that can parse Turtle, TriG, N-Triples, and N-Quads documents.
+ * @see {@link https://github.com/rdfjs/N3.js#parsing}
+ */
+parser = new Parser(),
+
 /** Functions to create RDF statements and terms. */
 t = {
   quad        : DataFactory.quad,
@@ -20,6 +26,7 @@ t = {
   defaultGraph: DataFactory.defaultGraph,
 },
 
+// keep `normalisePrefixes()` in sync with these
 owl     = iri`http://www.w3.org/2002/07/owl#`,
 rdf     = iri`http://www.w3.org/1999/02/22-rdf-syntax-ns#`,
 rdfs    = iri`http://www.w3.org/2000/01/rdf-schema#`,
@@ -28,14 +35,49 @@ dcterms = iri`http://purl.org/dc/terms/`,
 skos    = iri`http://www.w3.org/2004/02/skos/core#`,
 foaf    = iri`http://xmlns.com/foaf/0.1/`,
 schema  = iri`https://schema.org/`,
-qrmm    = iri`https://vocab.qworum.net/qrmm.ttl#`,
+qrmm    = iri`https://vocab.qworum.net/qrmm.ttl#`;
 
 
 /**
- * A parser that can parse Turtle, TriG, N-Triples, and N-Quads documents.
- * @see {@link https://github.com/rdfjs/N3.js#parsing}
+ * Datasets don't always use the vann prefixes of ontologies.
+ * This functions normalises the prefixes that the end-user will see.
+ * @param {Object.<string, string>} prefixes 
+ * @returns {Object.<string, string>}
  */
-parser = new Parser();
+function normalisePrefixes(prefixes) {
+  const 
+  wellKnownPrefixes = {
+    owl    ,
+    rdf    ,
+    rdfs   ,
+    vann   ,
+    dcterms,
+    skos   ,
+    foaf   ,
+    schema ,
+    qrmm   ,
+  },
+  wellKnownPrefixNames = Object.keys(wellKnownPrefixes),
+  wellKnownIris        = Object.values(wellKnownPrefixes),
+  reverseWellKnownPrefixes = wellKnownIris.reduce(
+    (output, wellKnownIri) => {
+      const wellKnownPrefixName = wellKnownPrefixNames.find(n => wellKnownIri.equals(wellKnownPrefixes[n]));
+      output[`${wellKnownIri}`] = wellKnownPrefixName;
+      return output;
+    },
+    {}
+  ),
+  normalisedPrefixes = {};
+
+  for (const [prefix, anIriStr] of Object.entries(prefixes)) {
+    if (wellKnownIris.find(v => v.equals(iri`${anIriStr}`))) {
+      normalisedPrefixes[reverseWellKnownPrefixes[anIriStr]] = anIriStr;
+    } else {
+      normalisedPrefixes[prefix] = anIriStr;
+    }
+  }
+  return normalisedPrefixes;
+}
 
 
 /**
@@ -63,7 +105,7 @@ async function parseRdf(rdfDocument) {
             quads.push(quad); 
           } else {
             // console.debug(`end`);
-            resolve({ prefixes, quads }); return;
+            resolve({ prefixes: normalisePrefixes(prefixes), quads }); return;
           }
         },
 
