@@ -76,7 +76,7 @@ function proseOf(term, dictionary) {
     //   return null;
     // }
     if (!prose.subject && !prose.predicate && !prose.object)return null;
-    if (isTriple(term.subject)) { // TODO replace "; this" I18N BUG
+    if (isTriple(term.subject)) { // TODO "; xxx" I18N BUG
       return `${prose.subject ?? prosePlaceholder}; {${snippetMarker.sha256}❖this❖} ${prose.predicate ?? prosePlaceholder} ${prose.object ?? prosePlaceholder}`;
     } else {
       return `${prose.subject ?? prosePlaceholder} ${prose.predicate ?? prosePlaceholder} ${prose.object ?? prosePlaceholder}`;

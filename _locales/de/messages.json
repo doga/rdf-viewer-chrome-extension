@@ -1,0 +1,10 @@
+{
+  "extension_name": {
+    "description": "Der Name dieser Browser-Erweiterung.",
+    "message": "RDF-Viewer"
+  },
+  "extension_description": {
+    "description": "The description of this Chrome extension.",
+    "message": "Zeigt RDF-Dokumente als für Menschen lesbare HTML-Dokumente an."
+  }
+}

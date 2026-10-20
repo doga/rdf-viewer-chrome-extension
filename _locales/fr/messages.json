@@ -1,0 +1,10 @@
+{
+  "extension_name": {
+    "description": "Le nom de cette extension de navigateur.",
+    "message": "RDF Viewer"
+  },
+  "extension_description": {
+    "description": "La description de cette extension de navigateur.",
+    "message": "Affiche les documents RDF sous forme de documents HTML facilement lisibles."
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "extension_name": {
+    "description": "Tarayıcı uzantısının adı.",
+    "message": "RDF Viewer"
+  },
+  "extension_description": {
+    "description": "Bu tarayıcı eklentisinin açıklaması.",
+    "message": "RDF belgelerini insan tarafından kolayca okunabilir HTML belgeleri olarak görüntüler."
+  }
+}

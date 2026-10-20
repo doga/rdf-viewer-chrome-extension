@@ -1,0 +1,10 @@
+{
+  "extension_name": {
+    "description": "The name of this browser extension.",
+    "message"    : "RDF Viewer"
+  },
+  "extension_description": {
+    "description": "The description of this browser extension.",
+    "message"    : "Displays RDF documents as human-readable HTML documents."
+  }
+}

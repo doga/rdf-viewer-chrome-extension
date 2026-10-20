@@ -1,9 +1,10 @@
 {
   "manifest_version": 3,
-  "name": "RDF Viewer",
-  "version": "1.5",
-  "description": "Displays RDF documents as human-readable HTML documents.",
-  "background": {
+  "name"            : "__MSG_extension_name__",
+  "description"     : "__MSG_extension_description__",
+  "version"         : "1.6",
+  "default_locale"  : "en",
+  "background"      : {
     "service_worker": "background.js",
     "type"          : "module"
   },
