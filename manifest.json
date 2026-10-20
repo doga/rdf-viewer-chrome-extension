@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name"            : "__MSG_extension_name__",
   "description"     : "__MSG_extension_description__",
-  "version"         : "1.6",
+  "version"         : "1.7",
   "default_locale"  : "en",
   "background"      : {
     "service_worker": "background.js",
@@ -21,9 +21,9 @@
     }
   ],
   "icons": {
-    "16" : "/assets/images/icons/semantic-web-logo-16px.png",
-    "32" : "/assets/images/icons/semantic-web-logo-32px.png",
-    "48" : "/assets/images/icons/semantic-web-logo-48px.png",
-    "128": "/assets/images/icons/semantic-web-logo-128px.png"
+    "16" : "/assets/images/icons/alpha/semantic-web-logo-16px-alpha.png",
+    "32" : "/assets/images/icons/alpha/semantic-web-logo-32px-alpha.png",
+    "48" : "/assets/images/icons/alpha/semantic-web-logo-48px-alpha.png",
+    "128": "/assets/images/icons/alpha/semantic-web-logo-128px-alpha.png"
   }
 }
