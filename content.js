@@ -66,6 +66,7 @@ function showNonOntologyDataset(viewModel) {
   const 
   foaf   = 'http://xmlns.com/foaf/0.1/',
   schema = 'https://schema.org/',
+  rdfs   = 'http://www.w3.org/2000/01/rdf-schema#',
   qrmm   = 'https://vocab.qworum.net/qrmm.ttl#',
   ui     = {
     // title      : document.querySelector('.dataset-header > h1'),
@@ -124,7 +125,7 @@ function showNonOntologyDataset(viewModel) {
     }
 
     // ignore predicates used in the dictionary in the background.
-    if (![`${qrmm}prose`, `${foaf}name`, `${schema}name`, `${schema}givenName`].includes(statement.predicate.value)) {
+    if (![`${qrmm}prose`, `${foaf}name`, `${schema}name`, `${schema}givenName`, `${rdfs}label`].includes(statement.predicate.value)) {
       const prose = viewModel.prose[index];
       if(prose)statementUi.prose.innerText = prose;
     }

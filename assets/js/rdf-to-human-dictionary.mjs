@@ -1,7 +1,7 @@
 import { 
   parseRdf, t, 
   isLiteral, isNamedNode, isTerm,
-  qrmm, foaf, bio, rel, schema, rdf,
+  qrmm, foaf, bio, rel, schema, rdf, rdfs,
   isBlankNode, 
 } from "./utils/rdf-utils.mjs";
 import { Store } from "./pulled-in/N3.js/v2.13.12/n3.esm.min.js";
@@ -202,14 +202,14 @@ translations = { // TODO: reflect any update here to vocab.qworum.net.
     bio:olb qrmm:prose 'has this short biography:'@en .
     bio:Ordination qrmm:prose 'an ordination'@en .
     bio:organization qrmm:prose 'has involved'@en .
-    bio:parent qrmm:prose 'was involved as parent in'@en .
+    bio:parent qrmm:prose 'had as parent'@en .
     bio:participant qrmm:prose 'was involved in'@en .
     bio:partner qrmm:prose 'was involved as partner in'@en .
     bio:Performance qrmm:prose 'a performance'@en .
     bio:place qrmm:prose 'happened in'@en .
     bio:position qrmm:prose 'occupied the post'@en .
     bio:precedingEvent qrmm:prose 'was preceded by'@en .
-    bio:principal qrmm:prose 'was the principal person at'@en .
+    bio:principal qrmm:prose 'was about'@en .
     bio:Promotion qrmm:prose 'a promotion'@en .
     bio:Redundancy qrmm:prose 'a redundancy'@en .
     bio:relationship qrmm:prose 'was involved with'@en .
@@ -278,8 +278,12 @@ class Dictionary {
    * @example
    * ```javascript
    * {
-   *   'http://www.w3.org/1999/02/22-rdf-syntax-ns#type': {en: 'is'},
-   *   'https://site.example/jimdo': {'': 'Jim Do'}
+   *    // translate named nodes
+   *    'http://www.w3.org/1999/02/22-rdf-syntax-ns#type': {en: 'is'},
+   *    'https://site.example/jimdo': {'': 'Jim Do'}
+   * 
+   *    // transklate blank nodes
+   *    'b1': {'': 'Henry'}
    * }
    * ```
    * @private
@@ -332,9 +336,15 @@ class Dictionary {
       const
       foafNameDs        = dataset.match(null, t.namedNode(`${foaf}name`)),
       schemaNameDs      = dataset.match(null, t.namedNode(`${schema}name`)),
-      schemaGivenNameDs = dataset.match(null, t.namedNode(`${schema}givenName`));
+      schemaGivenNameDs = dataset.match(null, t.namedNode(`${schema}givenName`)),
+      rdfsLabelDs       = dataset.match(null, t.namedNode(`${rdfs}label`));
 
-      translationDs.addAll(foafNameDs.union(schemaNameDs).union(schemaGivenNameDs));
+      translationDs.addAll(
+        foafNameDs
+        .union(schemaNameDs)
+        .union(schemaGivenNameDs)
+        .union(rdfsLabelDs)
+      );
     }
     // console.debug(`[addDataset] translationDs _`,translationDs.size,translationDs);
 
