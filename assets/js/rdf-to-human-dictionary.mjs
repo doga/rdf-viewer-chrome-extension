@@ -1,7 +1,7 @@
 import { 
   parseRdf, t, 
   isLiteral, isNamedNode, isTerm,
-  qrmm, foaf, schema, rdf, 
+  qrmm, foaf, bio, rel, schema, rdf, 
 } from "./utils/rdf-utils.mjs";
 import { Store } from "./pulled-in/N3.js/v2.13.12/n3.esm.min.js";
 import { iri, IRI } from "./pulled-in/IRI/3.1.6/mod.mjs";
@@ -10,9 +10,6 @@ import { userLang } from "./utils/user-lang.mjs";
 import { isArray, isString } from "./utils/js-utils.mjs";
 
 const
-/** @type {Object.<string, IRI>} */
-iris = { qrmm, foaf, schema, rdf },
-
 /**
  * `qrmm:prose` annotations to translate existing ontologies.
  * @type {Object.<string, string>}
@@ -20,11 +17,13 @@ iris = { qrmm, foaf, schema, rdf },
 translations = { // TODO: reflect any update here to vocab.qworum.net.
   rdf: `
     # https://vocab.qworum.net/prose-annotations/rdf-and-rdfs-annotations.ttl
+
     PREFIX qrmm: <https://vocab.qworum.net/qrmm.ttl#>
     PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-    # PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+    PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 
-    rdf:type qrmm:prose 'is'@en, 'est'@fr, 'ist'@de .
+    rdf:type qrmm:prose 'is'@en .
+    rdfs:label qrmm:prose 'is'@en .
   `,
 
   foaf: `
@@ -49,13 +48,13 @@ translations = { // TODO: reflect any update here to vocab.qworum.net.
       'an image'@en,
       'an image'@fr,
       'an image'@de.
-    foaf:Organization qrmm:prose 'a kind of agent corresponding to social instititutions such as companies, societies etc'@en .
+    foaf:Organization qrmm:prose 'an organisation'@en-GB .
     foaf:Person qrmm:prose 'a person'@en .
 
     # Classes (testing)
-    foaf:OnlineAccount qrmm:prose "an agent's account in an online service"@en .
-    foaf:PersonalProfileDocument qrmm:prose 'a personal profile RDF document'@en .
-    foaf:Project qrmm:prose "a project, so it's an individual or collective endeavour of some kind"@en .
+    foaf:OnlineAccount qrmm:prose "an online account"@en .
+    foaf:PersonalProfileDocument qrmm:prose 'a personal profile'@en .
+    foaf:Project qrmm:prose 'a project'@en .
 
     # Classes (unstable)
     foaf:LabelProperty qrmm:prose 'a label'@en .
@@ -96,7 +95,7 @@ translations = { // TODO: reflect any update here to vocab.qworum.net.
     foaf:jabberID qrmm:prose 'has the Jabber ID'@en .
     foaf:lastName qrmm:prose 'has the last name'@en .
     foaf:logo qrmm:prose 'has the logo'@en .
-    foaf:mbox_sha1sum qrmm:prose 'has a mailbox address URL with the SHA1 checksum'@en .
+    foaf:mbox_sha1sum qrmm:prose 'has the SHA1 hash'@en .
     foaf:msnChatID qrmm:prose 'has the MSN chat ID'@en .
     foaf:myersBriggs qrmm:prose 'has the Myers Briggs personality classification code'@en .
     foaf:name qrmm:prose # redundant with the subject's prose annotation 
@@ -111,7 +110,7 @@ translations = { // TODO: reflect any update here to vocab.qworum.net.
     foaf:publications qrmm:prose 'has published'@en .
     foaf:schoolHomepage qrmm:prose 'has attended the school that has the homepage'@en .
     foaf:skypeID qrmm:prose 'has the Skype ID'@en .
-    foaf:thumbnail qrmm:prose 'is depicted in an image whose thumbnail version is'@en .
+    foaf:thumbnail qrmm:prose 'has the thumbnail'@en .
     foaf:tipjar qrmm:prose 'accepts payments as described in'@en .
     foaf:title qrmm:prose 'has the title'@en .
     foaf:topic qrmm:prose 'has the topic'@en .
@@ -137,6 +136,135 @@ translations = { // TODO: reflect any update here to vocab.qworum.net.
     foaf:surname qrmm:prose 'has the surname'@en .
     foaf:theme qrmm:prose 'broadly fits the theme'@en .
   `,
+
+  bio: `
+    # https://vocab.qworum.net/prose-annotations/bio-annotations.ttl
+
+    PREFIX qrmm: <https://vocab.qworum.net/qrmm.ttl#>
+    PREFIX bio: <http://purl.org/vocab/bio/0.1/> # https://vocab.org/bio/
+
+    bio:Accession qrmm:prose 'an accession to the throne'@en .
+    bio:Adoption qrmm:prose 'an adoption'@en .
+    bio:agent qrmm:prose 'a person, organization or group'@en .
+    bio:Relationship qrmm:prose 'a relationship'@en .
+    bio:Annulment qrmm:prose 'an annulment'@en .
+    bio:Assassination qrmm:prose 'an assassination'@en .
+    bio:Baptism qrmm:prose 'a baptism'@en .
+    bio:BarMitzvah qrmm:prose 'a Bar Mitzvah'@en .
+    bio:BasMitzvah qrmm:prose 'a Bas Mitzvah'@en .
+    bio:biography qrmm:prose 'has the biography'@en .
+    bio:Birth qrmm:prose 'a birth'@en .
+    bio:birth qrmm:prose 'has the birth event description'@en .
+    bio:Burial qrmm:prose 'a burial'@en .
+    bio:NameChange qrmm:prose 'a name change'@en .
+    bio:PositionChange qrmm:prose 'a position change'@en .
+    bio:child qrmm:prose 'has the child'@en .
+    bio:concludingEvent qrmm:prose 'was ended by'@en .
+    bio:concurrentEvent qrmm:prose 'is concurrent with'@en .
+    bio:Coronation qrmm:prose 'a coronation'@en .
+    bio:Cremation qrmm:prose 'a cremation'@en .
+    bio:date qrmm:prose 'happened on'@en .
+    bio:Death qrmm:prose 'a death'@en .
+    bio:death qrmm:prose 'has the death event description'@en .
+    bio:Demotion qrmm:prose 'a demotion'@en .
+    bio:Disbanding qrmm:prose 'a disbanding'@en .
+    bio:Dismissal qrmm:prose 'a dismissal'@en .
+    bio:Divorce qrmm:prose 'a divorce'@en .
+    bio:Emigration qrmm:prose 'an emigration'@en .
+    bio:employer qrmm:prose 'had the employer'@en .
+    bio:Employment qrmm:prose 'an employment'@en .
+    bio:Enrolment qrmm:prose 'en enrolment'@en .
+    bio:Event qrmm:prose 'an event'@en .
+    bio:eventInterval qrmm:prose 'has occured during this period:'@en .
+    bio:Execution qrmm:prose 'an execution'@en .
+    bio:father qrmm:prose 'is the child of'@en .
+    bio:followingEvent qrmm:prose 'was followed by'@en .
+    bio:Formation qrmm:prose 'a formation'@en .
+    bio:Funeral qrmm:prose 'a funeral'@en .
+    bio:Graduation qrmm:prose 'a graduation'@en .
+    bio:GroupEvent qrmm:prose 'an event'@en .
+    bio:immediatelyFollowingEvent qrmm:prose 'was immediately followed by'@en .
+    bio:immediatelyPrecedingEvent qrmm:prose 'was immediately preceded by'@en .
+    bio:Imprisonment qrmm:prose 'an imprisonment'@en .
+    bio:Inauguration qrmm:prose 'an inauguration'@en .
+    bio:IndividualEvent qrmm:prose 'an event'@en .
+    bio:initiatingEvent qrmm:prose 'has the initiating event'@en .
+    bio:Interval qrmm:prose 'an interval'@en .
+    bio:Investiture qrmm:prose 'an investiture'@en .
+    bio:keywords qrmm:prose 'is described by the keywords'@en .
+    bio:event qrmm:prose 'was associated in the event'@en .
+    bio:Marriage qrmm:prose 'a marriage'@en .
+    bio:mother qrmm:prose 'is the child of'@en .
+    bio:Murder qrmm:prose 'a murder'@en .
+    bio:Naturalization qrmm:prose 'a naturalisation'@en .
+    bio:officiator qrmm:prose 'officiated at'@en .
+    bio:olb qrmm:prose 'has this short biography:'@en .
+    bio:Ordination qrmm:prose 'an ordination'@en .
+    bio:organization qrmm:prose 'has involved'@en .
+    bio:parent qrmm:prose 'was involved as parent in'@en .
+    bio:participant qrmm:prose 'was involved in'@en .
+    bio:partner qrmm:prose 'was involved as partner in'@en .
+    bio:Performance qrmm:prose 'a performance'@en .
+    bio:place qrmm:prose 'happened in'@en .
+    bio:position qrmm:prose 'occupied the post'@en .
+    bio:precedingEvent qrmm:prose 'was preceded by'@en .
+    bio:principal qrmm:prose 'was the principal person at'@en .
+    bio:Promotion qrmm:prose 'a promotion'@en .
+    bio:Redundancy qrmm:prose 'a redundancy'@en .
+    bio:relationship qrmm:prose 'was involved with'@en .
+    bio:interval qrmm:prose 'was current during'@en .
+    bio:Resignation qrmm:prose 'a resignation'@en .
+    bio:Retirement qrmm:prose 'a retirement'@en .
+    bio:spectator qrmm:prose 'was spectator to'@en .
+    bio:state qrmm:prose 'involved'@en .
+    bio:witness qrmm:prose 'has witnessed'@en .
+  `,
+
+  rel: `
+    # https://vocab.qworum.net/prose-annotations/rel-annotations.ttl
+
+    PREFIX qrmm: <https://vocab.qworum.net/qrmm.ttl#>
+    PREFIX rel: <http://purl.org/vocab/relationship/>
+
+    # Classes
+    rel:Relationship qrmm:prose 'a relationship'@en .
+
+    # Properties
+    rel:acquaintanceOf qrmm:prose 'is acquainted to'@en .
+    rel:ambivalentOf qrmm:prose 'has mixed feelings about'@en .
+    rel:ancestorOf qrmm:prose 'is the ancestor of'@en .
+    rel:antagonistOf qrmm:prose 'is antagonistic towards'@en .
+    rel:apprenticeTo qrmm:prose 'is the apprentice of'@en .
+    rel:childOf qrmm:prose 'is the child of'@en .
+    rel:closeFriendOf qrmm:prose 'is close friends with'@en .
+    rel:collaboratesWith qrmm:prose 'works with'@en .
+    rel:colleagueOf qrmm:prose 'is colleagues with'@en .
+    rel:descendantOf qrmm:prose 'is the descendant of'@en .
+    rel:employedBy qrmm:prose 'is employed by'@en .
+    rel:employerOf qrmm:prose 'is the employer of'@en .
+    rel:enemyOf qrmm:prose 'is the enemy of'@en .
+    rel:engagedTo qrmm:prose 'is engaged to'@en .
+    rel:friendOf qrmm:prose 'is friends with'@en .
+    rel:grandchildOf qrmm:prose 'is the grandchild of'@en .
+    rel:grandparentOf qrmm:prose 'is the grandparent of'@en .
+    rel:hasMet qrmm:prose 'has met'@en .
+    rel:influencedBy qrmm:prose 'was influenced by'@en .
+    rel:knowsByReputation qrmm:prose 'has heard of'@en .
+    rel:knowsInPassing qrmm:prose 'vaguely knows'@en .
+    rel:knowsOf qrmm:prose 'knows'@en .
+    rel:lifePartnerOf qrmm:prose 'is living in partnership with'@en .
+    rel:livesWith qrmm:prose 'lives with'@en .
+    rel:lostContactWith qrmm:prose 'has lost contact with'@en .
+    rel:mentorOf qrmm:prose 'is the mentor of'@en .
+    rel:neighborOf qrmm:prose 'is neighbours with'@en .
+    rel:parentOf qrmm:prose 'is the parent of'@en .
+    rel:participant qrmm:prose 'has the participant'@en .
+    rel:participantIn qrmm:prose 'is a participant in'@en .
+    rel:siblingOf qrmm:prose 'is the sibling of'@en .
+    rel:spouseOf qrmm:prose 'is the spouse of'@en .
+    rel:worksWith qrmm:prose 'works with'@en .
+    rel:wouldLikeToKnow qrmm:prose 'wishes to get to know'@en .
+  `
 };
 
 
