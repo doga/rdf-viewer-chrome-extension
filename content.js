@@ -66,7 +66,7 @@ function showNonOntologyDataset(viewModel) {
   const 
   foaf   = 'http://xmlns.com/foaf/0.1/',
   schema = 'https://schema.org/',
-  qrmm   = 'https://vocab.qworum.net/multi.ttl#',
+  qrmm   = 'https://vocab.qworum.net/qrmm.ttl#',
   ui     = {
     // title      : document.querySelector('.dataset-header > h1'),
     // description: document.querySelector('.dataset-header > p'),
