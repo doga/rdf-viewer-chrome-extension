@@ -329,21 +329,21 @@ class Dictionary {
   addDataset(dataset, isOntology){
     // console.debug(`add(dataset) ${dataset.size}`,dataset);
 
-    const translationDs = dataset.match(null, t.namedNode(`${qrmm}prose`));
+    const 
+    translationDs         = dataset.match(null, t.namedNode(`${qrmm}prose`)),
+    fallbackTranslationDs = dataset.match(null, t.namedNode(`${rdfs}label`));
     // console.debug(`[addDataset] translationDs`,translationDs.size,translationDs);
 
     if (!isOntology) {
       const
       foafNameDs        = dataset.match(null, t.namedNode(`${foaf}name`)),
       schemaNameDs      = dataset.match(null, t.namedNode(`${schema}name`)),
-      schemaGivenNameDs = dataset.match(null, t.namedNode(`${schema}givenName`)),
-      rdfsLabelDs       = dataset.match(null, t.namedNode(`${rdfs}label`));
+      schemaGivenNameDs = dataset.match(null, t.namedNode(`${schema}givenName`));
 
       translationDs.addAll(
         foafNameDs
         .union(schemaNameDs)
         .union(schemaGivenNameDs)
-        .union(rdfsLabelDs)
       );
     }
     // console.debug(`[addDataset] translationDs _`,translationDs.size,translationDs);
@@ -355,6 +355,19 @@ class Dictionary {
         this.#dict[statement.subject.value] ??= {};
 
         // add prose to subject's dictionary entry
+        if(!this.#dict[statement.subject.value][statement.object.language])
+        this.#dict[statement.subject.value][statement.object.language] = statement.object.value;
+      }
+    }
+
+    for (const statement of fallbackTranslationDs){
+      if ((isNamedNode(statement.subject) || isBlankNode(statement.subject)) && isLiteral(statement.object)) {
+        // console.debug(`add(dataset)`,dataset);
+        // init dictionary entry for subject's IRI
+        this.#dict[statement.subject.value] ??= {};
+
+        // add prose to subject's dictionary entry
+        if(!this.#dict[statement.subject.value][statement.object.language])
         this.#dict[statement.subject.value][statement.object.language] = statement.object.value;
       }
     }
