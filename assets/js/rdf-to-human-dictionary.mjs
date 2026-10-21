@@ -1,7 +1,8 @@
 import { 
   parseRdf, t, 
   isLiteral, isNamedNode, isTerm,
-  qrmm, foaf, bio, rel, schema, rdf, 
+  qrmm, foaf, bio, rel, schema, rdf,
+  isBlankNode, 
 } from "./utils/rdf-utils.mjs";
 import { Store } from "./pulled-in/N3.js/v2.13.12/n3.esm.min.js";
 import { iri, IRI } from "./pulled-in/IRI/3.1.6/mod.mjs";
@@ -338,7 +339,7 @@ class Dictionary {
     // console.debug(`[addDataset] translationDs _`,translationDs.size,translationDs);
 
     for (const statement of translationDs){
-      if (isNamedNode(statement.subject) && isLiteral(statement.object)) {
+      if ((isNamedNode(statement.subject) || isBlankNode(statement.subject)) && isLiteral(statement.object)) {
         // console.debug(`add(dataset)`,dataset);
         // init dictionary entry for subject's IRI
         this.#dict[statement.subject.value] ??= {};
@@ -387,7 +388,7 @@ class Dictionary {
    */
   lookup(term){
     // console.debug(`[lookup]`,term);
-    if(!isNamedNode(term))return null;
+    if(!(isNamedNode(term) || isBlankNode(term)))return null;
     const dictEntry = this.#dict[term.value];
     if (dictEntry) {
       const 
