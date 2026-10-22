@@ -36,11 +36,7 @@ async function getViewModel(args) {
   let dataset = new Store();
   
   dataset.addAll(quads);
-  console.debug(`dataset.size`,dataset.size);
   dataset = transformToRdfStarDataset(dataset);
-
-  console.debug(`quads`,quads);
-  console.debug(`dataset`,dataset);
 
   const
   /**
@@ -64,7 +60,7 @@ async function getViewModel(args) {
     )
   );
 
-  console.debug(`viewModel`,viewModel);
+  // console.debug(`viewModel`,viewModel);
 
   return viewModel;
 }

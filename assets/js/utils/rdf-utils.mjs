@@ -93,7 +93,6 @@ function normalisePrefixes(prefixes) {
  * @see {@link https://rdf.js.org/dataset-spec/#dataset-interface | Dataset interface}
  */
 function transformToRdfStarDataset(rdf_1_2_Dataset) {
-  console.debug(`transformToRdfStarDataset`);
   const 
   /** @type {IRI} the IRI of the predicate in the reifying triple. */
   reifies = iri`${rdf}reifies`,
@@ -129,7 +128,6 @@ function transformToRdfStarDataset(rdf_1_2_Dataset) {
  * @returns {Object}
  */
 function replaceReifier(term, reifyingTriplesDs) {
-  console.debug(`replaceReifier in`, term, reifyingTriplesDs);
 
   if (isBlankNode(term) || isNamedNode(term)) {
     const termReplacementDs = reifyingTriplesDs.match(term);
