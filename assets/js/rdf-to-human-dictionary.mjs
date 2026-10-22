@@ -160,7 +160,7 @@ translations = { // TODO: reflect any update here to vocab.qworum.net.
     bio:NameChange qrmm:prose 'a name change'@en .
     bio:PositionChange qrmm:prose 'a position change'@en .
     bio:child qrmm:prose 'has the child'@en .
-    bio:concludingEvent qrmm:prose 'was ended by'@en .
+    bio:concludingEvent qrmm:prose 'ended by'@en .
     bio:concurrentEvent qrmm:prose 'is concurrent with'@en .
     bio:Coronation qrmm:prose 'a coronation'@en .
     bio:Cremation qrmm:prose 'a cremation'@en .
@@ -189,11 +189,11 @@ translations = { // TODO: reflect any update here to vocab.qworum.net.
     bio:Imprisonment qrmm:prose 'an imprisonment'@en .
     bio:Inauguration qrmm:prose 'an inauguration'@en .
     bio:IndividualEvent qrmm:prose 'an event'@en .
-    bio:initiatingEvent qrmm:prose 'has the initiating event'@en .
+    bio:initiatingEvent qrmm:prose 'started with'@en .
     bio:Interval qrmm:prose 'an interval'@en .
     bio:Investiture qrmm:prose 'an investiture'@en .
     bio:keywords qrmm:prose 'is described by the keywords'@en .
-    bio:event qrmm:prose 'was associated in the event'@en .
+    bio:event qrmm:prose 'was involved in'@en .
     bio:Marriage qrmm:prose 'a marriage'@en .
     bio:mother qrmm:prose 'is the child of'@en .
     bio:Murder qrmm:prose 'a murder'@en .
@@ -204,7 +204,7 @@ translations = { // TODO: reflect any update here to vocab.qworum.net.
     bio:organization qrmm:prose 'has involved'@en .
     bio:parent qrmm:prose 'had as parent'@en .
     bio:participant qrmm:prose 'was involved in'@en .
-    bio:partner qrmm:prose 'was involved as partner in'@en .
+    bio:partner qrmm:prose 'involved'@en .
     bio:Performance qrmm:prose 'a performance'@en .
     bio:place qrmm:prose 'happened in'@en .
     bio:position qrmm:prose 'occupied the post'@en .
