@@ -25,8 +25,8 @@ async function showRdf(rdf) {
     body    : {rdf},
   },
   response = await chrome.runtime.sendMessage(request);
-  // console.debug(`response`, response);
   if (!ok(response))return;
+  console.debug(`response`, response);
 
   switch (response.body.documentType) {
     case 'ontology':

@@ -93,55 +93,62 @@ function normalisePrefixes(prefixes) {
  * @see {@link https://rdf.js.org/dataset-spec/#dataset-interface | Dataset interface}
  */
 function transformToRdfStarDataset(rdf_1_2_Dataset) {
+  console.debug(`transformToRdfStarDataset`);
   const 
-  reifies        = iri`${rdf}reifies`,
-  reifiesDs      = rdf_1_2_Dataset.match(null, t.namedNode(`${reifies}`)),
+  /** @type {IRI} the IRI of the predicate in the reifying triple. */
+  reifies = iri`${rdf}reifies`,
+
+  /** @type {Object} dataset containing only the reifying triples. */
+  reifyingTriplesDs = (
+    rdf_1_2_Dataset
+    .match(null, t.namedNode(`${reifies}`))
+    .filter(quad => ((isNamedNode(quad.subject) || isBlankNode(quad.subject)) && isTriple(quad.object)))
+  );
+
+  if (reifyingTriplesDs.size === 0) {
+    return rdf_1_2_Dataset;
+  }
+
+  const
+  /** @type {Object} the result dataset. */
   rdfStarDataset = new Store();
 
   for (const quad of rdf_1_2_Dataset) {
-    // transform reification statements
+    // ignore reifying triples
     if (reifies.equals(iri`${quad.predicate.value}`)) continue;
 
-    for (const reifyingTriple of reifiesDs) {
-      const
-      {subject, object} = reifyingTriple,
-      reifier           = subject,
-      tripleTerm        = object,
-      
-      /** @see {@link https://www.w3.org/TR/rdf12-primer/#section-triple-terms} */
-      statementIsReifyingTriple = (
-        (isBlankNode(reifier) || isNamedNode(reifier)) && isTriple(tripleTerm)
-      );
-
-      if (!statementIsReifyingTriple)
-      throw new TypeError("not a reifier statement");
-
-      rdfStarDataset.add(replaceReifier(quad, reifier, tripleTerm))
-    }
+    rdfStarDataset.add(replaceReifier(quad, reifyingTriplesDs));
   }
-
   return rdfStarDataset;
 }
 
 /**
  * 
- * @param {Object} statement the quad where the reifier will be replaced with the triple term.
- * @param {Object} reifier the reifier named-node or blank-node that represents the triple term.
- * @param {Object} tripleTerm 
+ * @param {Object} term the quad where the reifier will be replaced with the triple term.
+ * @param {Object} reifyingTriplesDs 
+ * @returns {Object}
  */
-function replaceReifier(statement, reifier, tripleTerm) {
-  const
-  {subject, predicate, object, graph} = statement;
-  
-  if (subject.equals(reifier)) {
-    return t.quad(tripleTerm, predicate, object);
-  }else if(isTriple(subject)){
+function replaceReifier(term, reifyingTriplesDs) {
+  console.debug(`replaceReifier in`, term, reifyingTriplesDs);
+
+  if (isBlankNode(term) || isNamedNode(term)) {
+    const termReplacementDs = reifyingTriplesDs.match(term);
+    
+    if(termReplacementDs.size > 0)
+    for (const q of termReplacementDs) {
+      return q.object;
+    }
+  } else if(isQuad(term)){
+    const {subject, predicate, object, graph} = term;
     return t.quad(
-      replaceReifier(subject, reifier, tripleTerm), predicate, object
+      replaceReifier(subject, reifyingTriplesDs), 
+      predicate, 
+      object, 
+      graph
     );
   }
   
-  return statement;
+  return term;
 }
 
 

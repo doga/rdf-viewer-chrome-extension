@@ -30,11 +30,19 @@ import { readNonOntologyDataset } from './get-view-model/read-non-ontology-datas
 async function getViewModel(args) {
   const 
   {rdf}             = args,
-  {prefixes, quads} = await parseRdf(rdf),
+  {prefixes, quads} = await parseRdf(rdf);
 
   /** @see {@link https://rdf.js.org/dataset-spec/#dataset-interface | Dataset interface} */
-  dataset = transformToRdfStarDataset(new Store(quads)),
+  let dataset = new Store();
+  
+  dataset.addAll(quads);
+  console.debug(`dataset.size`,dataset.size);
+  dataset = transformToRdfStarDataset(dataset);
 
+  console.debug(`quads`,quads);
+  console.debug(`dataset`,dataset);
+
+  const
   /**
    * @type {?{ontologyType: string, vann: {prefix: string, iri: string}, title: string, description: string}}
    */
@@ -56,7 +64,7 @@ async function getViewModel(args) {
     )
   );
 
-  // console.debug(`viewModel`,viewModel);
+  console.debug(`viewModel`,viewModel);
 
   return viewModel;
 }
