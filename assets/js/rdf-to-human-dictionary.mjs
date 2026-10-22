@@ -322,6 +322,8 @@ class Dictionary {
    * - `schema:name`
    * - `schema:givenName`
    * 
+   * Lastly, `rdfs:label` is the fallback translation for both ontologies and non-ontology datasets.
+   * 
    * @param {Object} dataset
    * @param {(boolean | undefined)} isOntology
    * @see {@link https://rdf.js.org/dataset-spec/#dataset-interface | Dataset interface}

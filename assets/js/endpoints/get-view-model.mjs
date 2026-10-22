@@ -6,7 +6,7 @@
 // RDF
 import { Store } from '../pulled-in/N3.js/v2.13.12/n3.esm.min.js';
 import { 
-  parseRdf, t, selectUserLiteral, isPrefix,
+  parseRdf, transformToRdfStarDataset, t, selectUserLiteral, isPrefix,
   owl, rdf, rdfs, vann, dcterms,
 } from "../utils/rdf-utils.mjs";
 import {IRI, IRL, URN, irl, url, urn, iri} from '../pulled-in/IRI/3.1.6/mod.mjs';
@@ -33,7 +33,7 @@ async function getViewModel(args) {
   {prefixes, quads} = await parseRdf(rdf),
 
   /** @see {@link https://rdf.js.org/dataset-spec/#dataset-interface | Dataset interface} */
-  dataset = new Store(quads),
+  dataset = transformToRdfStarDataset(new Store(quads)),
 
   /**
    * @type {?{ontologyType: string, vann: {prefix: string, iri: string}, title: string, description: string}}

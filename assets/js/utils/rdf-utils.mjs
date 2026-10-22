@@ -3,7 +3,7 @@
  * @description utility functions for handling RDF
  */
 
-import { Parser, DataFactory } from '../pulled-in/N3.js/v2.13.12/n3.esm.min.js';
+import { Parser, Store, DataFactory } from '../pulled-in/N3.js/v2.13.12/n3.esm.min.js';
 import { iri, IRI } from "../pulled-in/IRI/3.1.6/mod.mjs";
 import { LanguageTag, langTag } from "../pulled-in/language/1.2.0/mod.mjs";
 import { isNull, isUndefined, isPlainObject, isString, isEmptyString } from "./js-utils.mjs";
@@ -85,7 +85,69 @@ function normalisePrefixes(prefixes) {
 
 
 /**
+ * Transforms an RDF 1.2 dataset into an RDF-Star dataset by removing `rdf:reifies` statements.
+ * 
+ * @param {Object} rdf_1_2_Dataset 
+ * @returns {Object}
+ * @throws {TypeError}
+ * @see {@link https://rdf.js.org/dataset-spec/#dataset-interface | Dataset interface}
+ */
+function transformToRdfStarDataset(rdf_1_2_Dataset) {
+  const 
+  reifies        = iri`${rdf}reifies`,
+  reifiesDs      = rdf_1_2_Dataset.match(null, t.namedNode(`${reifies}`)),
+  rdfStarDataset = new Store();
+
+  for (const quad of rdf_1_2_Dataset) {
+    // transform reification statements
+    if (reifies.equals(iri`${quad.predicate.value}`)) continue;
+
+    for (const reifyingTriple of reifiesDs) {
+      const
+      {subject, object} = reifyingTriple,
+      reifier           = subject,
+      tripleTerm        = object,
+      
+      /** @see {@link https://www.w3.org/TR/rdf12-primer/#section-triple-terms} */
+      statementIsReifyingTriple = (
+        (isBlankNode(reifier) || isNamedNode(reifier)) && isTriple(tripleTerm)
+      );
+
+      if (!statementIsReifyingTriple)
+      throw new TypeError("not a reifier statement");
+
+      rdfStarDataset.add(replaceReifier(quad, reifier, tripleTerm))
+    }
+  }
+
+  return rdfStarDataset;
+}
+
+/**
+ * 
+ * @param {Object} statement the quad where the reifier will be replaced with the triple term.
+ * @param {Object} reifier the reifier named-node or blank-node that represents the triple term.
+ * @param {Object} tripleTerm 
+ */
+function replaceReifier(statement, reifier, tripleTerm) {
+  const
+  {subject, predicate, object, graph} = statement;
+  
+  if (subject.equals(reifier)) {
+    return t.quad(tripleTerm, predicate, object);
+  }else if(isTriple(subject)){
+    return t.quad(
+      replaceReifier(subject, reifier, tripleTerm), predicate, object
+    );
+  }
+  
+  return statement;
+}
+
+
+/**
  * Parses an RDF document and returns prefixes and quads.
+ * Returns an RDF 1.2 dataset
  * @param {string} rdfDocument 
  * @throws {TypeError}
  * @returns {{prefixes: Object.<string, string>, quads: Object[]}}
@@ -340,7 +402,7 @@ function isQuad(term) {
 const isTriple = isQuad;
 
 export { 
-  parseRdf, t, selectUserLiteral, isPrefix,
+  parseRdf, transformToRdfStarDataset, t, selectUserLiteral, isPrefix,
   owl, rdf, rdfs, vann, dcterms, skos, foaf, bio, rel, schema, qrmm,
   isTerm, isNamedNode, isBlankNode, isLiteral, isDefaultGraph, isQuad, isTriple,
 };
