@@ -159,7 +159,7 @@ translations = { // TODO: reflect any update here to vocab.qworum.net.
     bio:Burial qrmm:prose 'a burial'@en .
     bio:NameChange qrmm:prose 'a name change'@en .
     bio:PositionChange qrmm:prose 'a position change'@en .
-    bio:child qrmm:prose 'has the child'@en .
+    bio:child qrmm:prose 'is the parent of'@en .
     bio:concludingEvent qrmm:prose 'ended by'@en .
     bio:concurrentEvent qrmm:prose 'is concurrent with'@en .
     bio:Coronation qrmm:prose 'a coronation'@en .
@@ -194,7 +194,7 @@ translations = { // TODO: reflect any update here to vocab.qworum.net.
     bio:Investiture qrmm:prose 'an investiture'@en .
     bio:keywords qrmm:prose 'is described by the keywords'@en .
     bio:event qrmm:prose 'was involved in'@en .
-    bio:Marriage qrmm:prose 'a marriage'@en .
+    bio:Marriage qrmm:prose 'a marriage ceremony'@en .
     bio:mother qrmm:prose 'is the child of'@en .
     bio:Murder qrmm:prose 'a murder'@en .
     bio:Naturalization qrmm:prose 'a naturalisation'@en .
