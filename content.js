@@ -110,7 +110,7 @@ function showNonOntologyDataset(viewModel) {
   for (let index = 0; index < viewModel.statements.length; index++) {
     const statement = viewModel.statements[index];
     if ([`${qrmm}begin`, `${qrmm}end`].includes(statement.predicate.value))continue;
-    if(['Quad', 'Triple'].includes(statement.subject.termType))continue;
+    // if(['Quad', 'Triple'].includes(statement.subject.termType))continue;
 
     const entry = document.createElement('tr');
     ui.statements.tableBody.append(entry);
@@ -171,6 +171,21 @@ function renderStatement(statement, parentUi, prefixes) {
       statementUi.object.classList.remove('entity-iri');
       statementUi.object.innerText = statement.object.value;
     }
+}
+
+
+/**
+ * Selects the language to display HTML templates with.
+ * @param {string[]} l10nLangs the languages that are available for the HTML template.
+ * @returns {string}
+ */
+function l10nLang(l10nLangs) {
+  const
+  userLang     = navigator.language.split('-')[0].toLowerCase(),
+  userLangs    = navigator.languages.map(l => l.split('-')[0].toLowerCase()),
+  selectedLang = l10nLangs.find(lang => lang === userLang) ?? userLangs.find(uLang => l10nLangs.find(lLang => lLang === uLang)) ?? l10nLangs[0];
+
+  return selectedLang;
 }
 
 
@@ -295,10 +310,10 @@ function emptyNonOntologyDatasetPage() {
     }
     .triple-term {
       &::before {
-        content: '《';
+        content: '<< ';
       };
       &::after {
-        content: '》'
+        content: ' >>'
       };
     }
     .badge {
@@ -333,7 +348,7 @@ function emptyNonOntologyDatasetPage() {
 
   const
   /**
-   * The localisation languages for the HTML template. The first is the default.
+   * The localisation languages available for the HTML template. The first is the default.
    */
   l10nLangs = ['en', 'fr', 'de', 'tr'],
 
@@ -390,7 +405,8 @@ function emptyNonOntologyDatasetPage() {
   // selectedLang = 'de';
   // selectedLang = 'fr';
   // selectedLang = `tr`;
-  selectedLang = l10nLangs.find(lang => lang === userLang) ?? userLangs.find(uLang => l10nLangs.find(lLang => lLang === uLang)) ?? l10nLangs[0];
+  selectedLang = l10nLang( l10nLangs);
+  // .find(lang => lang === userLang) ?? userLangs.find(uLang => l10nLangs.find(lLang => lLang === uLang)) ?? l10nLangs[0];
 
   document.body.className = 'dataset-body';
   document.body.innerHTML = `

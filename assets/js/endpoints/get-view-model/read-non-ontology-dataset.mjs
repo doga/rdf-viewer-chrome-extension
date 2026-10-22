@@ -2,6 +2,9 @@ import { rdf,  } from "../../utils/rdf-utils.mjs";
 import {
   Dictionary
 } from "../../rdf-to-human-dictionary.mjs";
+import { UserLang } from "../../utils/user-lang.mjs";
+
+import { LanguageTag, langTag } from "../../pulled-in/language/1.2.0/mod.mjs";
 
 import { isTerm, isNamedNode, isBlankNode, isLiteral, isDefaultGraph, isQuad, isTriple } from "../../utils/rdf-utils.mjs";
 
@@ -57,6 +60,14 @@ function proseOf(term, dictionary) {
   if (isQuad(term)) {
     // console.debug(`[proseOf] quad`);
     const 
+    l10n = [langTag`en`, langTag`fr`, langTag`de`],
+    binding = {
+      en: 'this',
+      fr: 'ceci',
+      de: 'dies'
+    },
+
+    userLang = new UserLang(),
     snippetMarker = {sha256: '070ffe9fe882ac061af035500765d81f758c267041f9c4de434d8fd02b088b9b', cleartext: 'rdf viewer chrome extension'},
     prosePlaceholder = '⍁⍁⍁', // TODO use plain RDF instead
     // prosePlaceholder = '❓',
@@ -65,19 +76,10 @@ function proseOf(term, dictionary) {
       predicate: proseOf(term.predicate, dictionary),
       object   : proseOf(term.object, dictionary),
     };
-    // console.debug(`[proseOf] quad prose ❝`,prose.subject, prose.predicate, prose.object, '❞');
-    // if (prose.subject && prose.predicate && prose.object) {
-    //   if (isTriple(term.subject)) {
-    //     return `${prose.subject}; this ${prose.predicate} ${prose.object}`;
-    //   } else {
-    //     return `${prose.subject} ${prose.predicate} ${prose.object}`;
-    //   }
-    // } else {
-    //   return null;
-    // }
+
     if (!prose.subject && !prose.predicate && !prose.object)return null;
     if (isTriple(term.subject)) { // TODO "; xxx" I18N BUG
-      return `${prose.subject ?? prosePlaceholder}; {${snippetMarker.sha256}❖this❖} ${prose.predicate ?? prosePlaceholder} ${prose.object ?? prosePlaceholder}`;
+      return `${prose.subject ?? prosePlaceholder}; ${binding[`${userLang.selectContentLangForUser(l10n)}`]} ${prose.predicate ?? prosePlaceholder} ${prose.object ?? prosePlaceholder}`;
     } else {
       return `${prose.subject ?? prosePlaceholder} ${prose.predicate ?? prosePlaceholder} ${prose.object ?? prosePlaceholder}`;
     }

@@ -100,7 +100,7 @@ translations = { // TODO: reflect any update here to vocab.qworum.net.
     foaf:msnChatID qrmm:prose 'has the MSN chat ID'@en .
     foaf:myersBriggs qrmm:prose 'has the Myers Briggs personality classification code'@en .
     foaf:name qrmm:prose # redundant with the subject's prose annotation 
-      'has the name'@en,
+      'is named'@en,
       'est nommé'@fr,
       'hat den Namen'@de.
     foaf:nick qrmm:prose 'has the nickname'@en .
