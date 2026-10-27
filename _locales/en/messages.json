@@ -6,5 +6,8 @@
   "extension_description": {
     "description": "The description of this browser extension.",
     "message"    : "Displays RDF documents as human-readable HTML documents."
+  },
+  "options": {
+    "message": "Options"
   }
 }

@@ -6,5 +6,8 @@
   "extension_description": {
     "description": "La description de cette extension de navigateur.",
     "message": "Affiche les documents RDF sous forme de documents HTML facilement lisibles."
+  },
+  "options": {
+    "message": "Options"
   }
 }

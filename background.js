@@ -1,6 +1,6 @@
 import { endpoints } from "./assets/js/endpoints/mod.mjs";
 
-// respond the incoming requests sent by the content script
+// respond to incoming requests sent by the content script
 chrome.runtime.onMessage.addListener(async (request, _sender, sendResponse) => {
   try {
     // console.debug('request', request);

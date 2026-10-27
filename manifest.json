@@ -2,13 +2,9 @@
   "manifest_version": 3,
   "name"            : "__MSG_extension_name__",
   "description"     : "__MSG_extension_description__",
-  "version"         : "1.9",
+  "version"         : "1.10",
   "default_locale"  : "en",
-  "background"      : {
-    "service_worker": "background.js",
-    "type"          : "module"
-  },
-  "content_scripts": [
+  "content_scripts" : [
     {
       "matches": [
         "http://*/*",
@@ -20,10 +16,17 @@
       "run_at": "document_idle"
     }
   ],
+  "options_page"    : "options.html",
+  "background"      : {
+    "service_worker": "background.js",
+    "type"          : "module"
+  },
   "icons": {
     "16" : "/assets/images/icons/alpha/semantic-web-logo-16px-alpha.png",
     "32" : "/assets/images/icons/alpha/semantic-web-logo-32px-alpha.png",
     "48" : "/assets/images/icons/alpha/semantic-web-logo-48px-alpha.png",
     "128": "/assets/images/icons/alpha/semantic-web-logo-128px-alpha.png"
-  }
+  },
+  "host_permissions"         : [ "https://vocab.qworum.net/*" ],
+  "optional_host_permissions": [ "https://*/*", "http://*/*" ]
 }

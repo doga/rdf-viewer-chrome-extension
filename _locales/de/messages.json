@@ -6,5 +6,8 @@
   "extension_description": {
     "description": "The description of this Chrome extension.",
     "message": "Zeigt RDF-Dokumente als für Menschen lesbare HTML-Dokumente an."
+  },
+  "options": {
+    "message": "Optionen"
   }
 }

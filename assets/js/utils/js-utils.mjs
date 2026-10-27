@@ -1,6 +1,6 @@
 /**
  * JavaScript utilities.
- * @module jsutil
+ * @module jsutils
  */
 
 function isNull(val) {
