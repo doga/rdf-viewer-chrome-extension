@@ -2,8 +2,8 @@
  * Endpoints used by the service worker to respond to content-script requests.
  */
 
-import { getViewModel } from "./content-script.mjs";
-import { knownOntologies } from "./options-page.mjs";
+import { getViewModel } from "./view-model.mjs";
+// import { knownOntologies } from "./options-page.mjs";
 
 const 
 endpoints = {

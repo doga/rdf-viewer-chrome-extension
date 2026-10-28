@@ -16,7 +16,6 @@
       "run_at": "document_idle"
     }
   ],
-  "options_page"    : "options.html",
   "background"      : {
     "service_worker": "background.js",
     "type"          : "module"
@@ -27,6 +26,5 @@
     "48" : "/assets/images/icons/alpha/semantic-web-logo-48px-alpha.png",
     "128": "/assets/images/icons/alpha/semantic-web-logo-128px-alpha.png"
   },
-  "host_permissions"         : [ "https://vocab.qworum.net/*" ],
-  "optional_host_permissions": [ "https://*/*", "http://*/*" ]
+  "host_permissions"         : [ "https://vocab.qworum.net/*" ]
 }

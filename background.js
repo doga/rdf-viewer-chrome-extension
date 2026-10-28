@@ -3,6 +3,8 @@ import { endpoints } from "./assets/js/endpoints/mod.mjs";
 // respond to incoming requests sent by the content script
 chrome.runtime.onMessage.addListener(async (request, _sender, sendResponse) => {
   try {
+    // throw new Error("l");
+    
     // console.debug('request', request);
     // sendResponse({status: {code: 501, message: 'not implemented'}}); return;
 
@@ -20,7 +22,7 @@ chrome.runtime.onMessage.addListener(async (request, _sender, sendResponse) => {
     sendResponse({status: {code: 200, message: 'OK'}, body: responseBody});
 
   } catch (error) {
-    sendResponse({status: {code: 500, message: 'internal server error'}});
+    sendResponse({status: {code: 500, message: `internal server error: ${error}`}});
   }
 });
 

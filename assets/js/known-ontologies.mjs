@@ -1,6 +1,6 @@
 import { 
   Translator, OntologyDictionary, parse, langTag, LanguagePreferences,
-} from './pulled-in/rdf-to-text/1.0.1/mod.mjs';
+} from './pulled-in/rdf-to-text/1.0.2/mod.mjs';
 
 import { irl, IRL } from "./pulled-in/IRI/3.1.6/mod.mjs";
 import { isArray, isNull} from "./utils/js-utils.mjs";
