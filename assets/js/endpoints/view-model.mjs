@@ -1,6 +1,6 @@
 /**
- * An endpoint to respond to content-script requests.
- * @module get-view-model
+ * Responds to content-script requests.
+ * @module view-model
  */
 
 // RDF

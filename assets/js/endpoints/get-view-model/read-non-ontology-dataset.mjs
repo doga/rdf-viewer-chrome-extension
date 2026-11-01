@@ -306,7 +306,7 @@ async function buildDictionaryForAllKnownOntologies() {
  * @see {@link https://rdf.js.org/data-model-spec/#quad-interface | Quad interface}
 */
 async function readNonOntologyDataset(dataset, prefixes) {
-  console.debug(`not an ontology`, dataset);
+  // console.debug(`not an ontology`, dataset);
   prefixes['rdf'] = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#';
 
   const
@@ -328,7 +328,7 @@ async function readNonOntologyDataset(dataset, prefixes) {
   // console.debug(`3`);
   dataset.forEach(statement => statements.push(statement));
 
-  console.debug(`viewModel`,viewModel);
+  // console.debug(`viewModel`,viewModel);
 
   return viewModel;
 }

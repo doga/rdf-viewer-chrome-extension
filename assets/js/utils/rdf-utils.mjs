@@ -33,9 +33,6 @@ rdfs    = iri`http://www.w3.org/2000/01/rdf-schema#`,
 vann    = iri`http://purl.org/vocab/vann/`,
 dcterms = iri`http://purl.org/dc/terms/`,
 skos    = iri`http://www.w3.org/2004/02/skos/core#`,
-foaf    = iri`http://xmlns.com/foaf/0.1/`,
-bio     = iri`http://purl.org/vocab/bio/0.1/`,
-rel     = iri`http://purl.org/vocab/relationship/`,
 schema  = iri`https://schema.org/`,
 qrmm    = iri`https://vocab.qworum.net/qrmm.ttl#`;
 
@@ -55,9 +52,6 @@ function normalisePrefixes(prefixes) {
     vann   ,
     dcterms,
     skos   ,
-    foaf   ,
-    bio,
-    rel,
     schema ,
     qrmm   ,
   },
@@ -408,6 +402,6 @@ const isTriple = isQuad;
 
 export { 
   parseRdf, transformToRdfStarDataset, t, selectUserLiteral, isPrefix,
-  owl, rdf, rdfs, vann, dcterms, skos, foaf, bio, rel, schema, qrmm,
+  owl, rdf, rdfs, vann, dcterms, skos, schema, qrmm,
   isTerm, isNamedNode, isBlankNode, isLiteral, isDefaultGraph, isQuad, isTriple,
 };
