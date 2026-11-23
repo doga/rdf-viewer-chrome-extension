@@ -4,6 +4,27 @@ import {
   owl, rdfs, rdf, dcterms, skos,
 } from "../../utils/rdf-utils.mjs";
 
+const
+rdfType             = t.namedNode(`${rdf}type`),
+rdfsClass           = t.namedNode(`${rdfs}Class`),
+rdfsSubClassOf      = t.namedNode(`${rdfs}subClassOf`),
+rdfProperty         = t.namedNode(`${rdf}Property`),
+rdfsSubPropertyOf   = t.namedNode(`${rdfs}subPropertyOf`),
+rdfsDatatype        = t.namedNode(`${rdfs}Datatype`),
+rdfsLabel           = t.namedNode(`${rdfs}label`),
+dctermsTitle        = t.namedNode(`${dcterms}title`),
+rdfsComment         = t.namedNode(`${rdfs}comment`),
+dctermsDescription  = t.namedNode(`${dcterms}description`),
+skosDefinition      = t.namedNode(`${skos}definition`),
+rdfsDomain          = t.namedNode(`${rdfs}domain`),
+rdfsRange           = t.namedNode(`${rdfs}range`),
+owlClass            = t.namedNode(`${owl}Class`),
+owlObjectProperty   = t.namedNode(`${owl}ObjectProperty`),
+owlDatatypeProperty = t.namedNode(`${owl}DatatypeProperty`),
+
+iriOwlClass = iri`${owl}Class`;
+
+
 /**
  * Returns an ontology view model.
  * @param {Object} dataset
@@ -15,20 +36,57 @@ import {
 function readOwlOntology(dataset, meta) {
   // console.debug(`owl ontology`);
   const
-  /** @see {@link https://rdf.js.org/dataset-spec/#dataset-interface | Dataset interface} */
-  classesDs = dataset.match(null, t.namedNode(`${rdf}type`), t.namedNode(`${owl}Class`)),
-  
-  /** @see {@link https://rdf.js.org/dataset-spec/#dataset-interface | Dataset interface} */
-  objectPropertiesDs = dataset.match(null, t.namedNode(`${rdf}type`), t.namedNode(`${owl}ObjectProperty`)),
+  /** 
+   * @type {Object} RDF dataset compliant with the rdf.js.org specification.
+   * @see {@link https://rdf.js.org/dataset-spec/#dataset-interface | Dataset interface} 
+   */
+  classesDs            = dataset.match(null, rdfType, owlClass),
+  objectPropertiesDs   = dataset.match(null, rdfType, owlObjectProperty),
+  datatypePropertiesDs = dataset.match(null, rdfType, owlDatatypeProperty),
+  subclassesDs         = dataset.match(null, rdfsSubClassOf),
+  subpropertiesDs      = dataset.match(null, rdfsSubPropertyOf),
+  viewModel            = meta;
 
-  /** @see {@link https://rdf.js.org/dataset-spec/#dataset-interface | Dataset interface} */
-  datatypePropertiesDs = dataset.match(null, t.namedNode(`${rdf}type`), t.namedNode(`${owl}DatatypeProperty`)),
-
-  viewModel                    = meta;
   viewModel.classes            = [];
   viewModel.objectProperties   = [];
   viewModel.datatypeProperties = [];
-  
+
+  // merge subclassesDs with classesDs
+  for (const quad of subclassesDs) {
+    classesDs.add(
+      t.quad(
+        quad.subject, rdfType, owlClass // quad.graph?
+      )
+    );
+  }
+
+  // update objectPropertiesDs and datatypePropertiesDs to include subpropertiesDs terms
+  let updated = true;
+  let quadToRemove = null;
+  while(updated){
+    updated = false;
+    quadToRemove = null;
+    for (const quad of subpropertiesDs) {
+      const {subject: subpropertyId, object: parentPropertyId} = quad;
+      // is subproperty an object property?
+      if (objectPropertiesDs.has(t.quad(parentPropertyId, rdfType, owlObjectProperty))) {
+        objectPropertiesDs.add(t.quad(subpropertyId, rdfType, owlObjectProperty));
+        quadToRemove = quad;
+        break;
+
+      // is subproperty a datatype property?
+      } else if (datatypePropertiesDs.has(t.quad(parentPropertyId, rdfType, owlObjectProperty))) {
+        datatypePropertiesDs.add(t.quad(subpropertyId, rdfType, owlDatatypeProperty));
+        quadToRemove = quad;
+        break;
+      }
+    }
+    if (quadToRemove) {
+      subpropertiesDs.delete(quadToRemove);
+      updated = true;
+    }
+  }
+
   // labels and descriptions
   let vms = [viewModel.classes, viewModel.objectProperties, viewModel.datatypeProperties];
   [classesDs, objectPropertiesDs, datatypePropertiesDs].forEach(
@@ -38,28 +96,28 @@ function readOwlOntology(dataset, meta) {
         const
         anIri = quad.subject.value,
         label = (
-          selectUserLiteral(dataset.match(quad.subject, t.namedNode(`${rdfs}label`)))?.value.trim() 
-          ?? selectUserLiteral(dataset.match(quad.subject, t.namedNode(`${dcterms}title`)))?.value.trim() 
+          selectUserLiteral(dataset.match(quad.subject, rdfsLabel))?.value.trim() 
+          ?? selectUserLiteral(dataset.match(quad.subject, dctermsTitle))?.value.trim() 
           ?? ''
         ),
         description = (
-          selectUserLiteral(dataset.match(quad.subject, t.namedNode(`${rdfs}comment`)))?.value.trim() 
-          ?? selectUserLiteral(dataset.match(quad.subject, t.namedNode(`${dcterms}description`)))?.value.trim() 
-          ?? selectUserLiteral(dataset.match(quad.subject, t.namedNode(`${skos}definition`)))?.value.trim() 
+          selectUserLiteral(dataset.match(quad.subject, rdfsComment))?.value.trim() 
+          ?? selectUserLiteral(dataset.match(quad.subject, dctermsDescription))?.value.trim() 
+          ?? selectUserLiteral(dataset.match(quad.subject, skosDefinition))?.value.trim() 
           ?? ''
         );
 
         
-        if (iri`${quad.object.value}`.equals(iri`${owl}Class`)) {
+        if (iriOwlClass.equals(iri`${quad.object.value}`)) {
           vm.push({iri: anIri, label, description});
         } else { // property
           const domain = [], range  = [];
           
-          for (const q of dataset.match(quad.subject, t.namedNode(`${rdfs}domain`))) {
+          for (const q of dataset.match(quad.subject, rdfsDomain)) {
             domain.push(q.object.value);
           }
           
-          for (const q of dataset.match(quad.subject, t.namedNode(`${rdfs}range`))) {
+          for (const q of dataset.match(quad.subject, rdfsRange)) {
             range.push(q.object.value);
           }
           

@@ -30,22 +30,17 @@ rdfsRange          = t.namedNode(`${rdfs}range`);
 function readRdfsOntology(dataset, meta) {
   // console.debug(`rdfs ontology`);
   const
-  /** @see {@link https://rdf.js.org/dataset-spec/#dataset-interface | Dataset interface} */
-  classesDs = dataset.match(null, rdfType, rdfsClass),
-  
-  /** @see {@link https://rdf.js.org/dataset-spec/#dataset-interface | Dataset interface} */
-  propertiesDs = dataset.match(null, rdfType, rdfProperty),
-  
-  /** @see {@link https://rdf.js.org/dataset-spec/#dataset-interface | Dataset interface} */
-  subclassesDs = dataset.match(null, rdfsSubClassOf),
-  
-  /** @see {@link https://rdf.js.org/dataset-spec/#dataset-interface | Dataset interface} */
+  /** 
+   * @type {Object} RDF dataset compliant with the rdf.js.org specification.
+   * @see {@link https://rdf.js.org/dataset-spec/#dataset-interface | Dataset interface} 
+   */
+  classesDs       = dataset.match(null, rdfType, rdfsClass),
+  propertiesDs    = dataset.match(null, rdfType, rdfProperty),
+  datatypesDs     = dataset.match(null, rdfType, rdfsDatatype),
+  subclassesDs    = dataset.match(null, rdfsSubClassOf),
   subpropertiesDs = dataset.match(null, rdfsSubPropertyOf),
+  viewModel       = meta;
 
-  /** @see {@link https://rdf.js.org/dataset-spec/#dataset-interface | Dataset interface} */
-  datatypesDs = dataset.match(null, rdfType, rdfsDatatype),
-
-  viewModel            = meta;
   viewModel.classes    = [];
   viewModel.predicates = [];
   viewModel.datatypes  = [];
@@ -67,7 +62,7 @@ function readRdfsOntology(dataset, meta) {
       )
     );
   }
-  
+
   // labels and descriptions
   const vms = [viewModel.classes, viewModel.predicates, viewModel.datatypes];
   [classesDs, propertiesDs, datatypesDs].forEach(
