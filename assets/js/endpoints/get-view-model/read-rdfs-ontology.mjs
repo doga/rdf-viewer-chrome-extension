@@ -3,6 +3,22 @@ import {
   rdf, rdfs, dcterms, skos,
 } from "../../utils/rdf-utils.mjs";
 
+const
+rdfType            = t.namedNode(`${rdf}type`),
+rdfsClass          = t.namedNode(`${rdfs}Class`),
+rdfsSubClassOf     = t.namedNode(`${rdfs}subClassOf`),
+rdfProperty        = t.namedNode(`${rdf}Property`),
+rdfsSubPropertyOf  = t.namedNode(`${rdfs}subPropertyOf`),
+rdfsDatatype       = t.namedNode(`${rdfs}Datatype`),
+rdfsLabel          = t.namedNode(`${rdfs}label`),
+dctermsTitle       = t.namedNode(`${dcterms}title`),
+rdfsComment        = t.namedNode(`${rdfs}comment`),
+dctermsDescription = t.namedNode(`${dcterms}description`),
+skosDefinition     = t.namedNode(`${skos}definition`),
+rdfsDomain         = t.namedNode(`${rdfs}domain`),
+rdfsRange          = t.namedNode(`${rdfs}range`);
+
+
 /**
  * Returns an ontology view model.
  * @param {Object} dataset
@@ -15,36 +31,60 @@ function readRdfsOntology(dataset, meta) {
   // console.debug(`rdfs ontology`);
   const
   /** @see {@link https://rdf.js.org/dataset-spec/#dataset-interface | Dataset interface} */
-  classesDs = dataset.match(null, t.namedNode(`${rdf}type`), t.namedNode(`${rdfs}Class`)),
+  classesDs = dataset.match(null, rdfType, rdfsClass),
   
   /** @see {@link https://rdf.js.org/dataset-spec/#dataset-interface | Dataset interface} */
-  predicatesDs = dataset.match(null, t.namedNode(`${rdf}type`), t.namedNode(`${rdf}Property`)),
+  propertiesDs = dataset.match(null, rdfType, rdfProperty),
+  
+  /** @see {@link https://rdf.js.org/dataset-spec/#dataset-interface | Dataset interface} */
+  subclassesDs = dataset.match(null, rdfsSubClassOf),
+  
+  /** @see {@link https://rdf.js.org/dataset-spec/#dataset-interface | Dataset interface} */
+  subpropertiesDs = dataset.match(null, rdfsSubPropertyOf),
 
   /** @see {@link https://rdf.js.org/dataset-spec/#dataset-interface | Dataset interface} */
-  datatypesDs = dataset.match(null, t.namedNode(`${rdf}type`), t.namedNode(`${rdfs}Datatype`)),
+  datatypesDs = dataset.match(null, rdfType, rdfsDatatype),
 
   viewModel            = meta;
   viewModel.classes    = [];
   viewModel.predicates = [];
   viewModel.datatypes  = [];
+
+  // merge subclassesDs with classesDs
+  for (const quad of subclassesDs) {
+    classesDs.add(
+      t.quad(
+        quad.subject, rdfType, rdfsClass // quad.graph?
+      )
+    );
+  }
+
+  // merge subpropertiesDs with propertiesDs
+  for (const quad of subpropertiesDs) {
+    propertiesDs.add(
+      t.quad(
+        quad.subject, rdfType, rdfProperty
+      )
+    );
+  }
   
   // labels and descriptions
   const vms = [viewModel.classes, viewModel.predicates, viewModel.datatypes];
-  [classesDs, predicatesDs, datatypesDs].forEach(
+  [classesDs, propertiesDs, datatypesDs].forEach(
     ds => {
       const vm = vms.shift();
       for (const quad of ds) {
         const
         anIri       = quad.subject.value,
         label       = (
-          selectUserLiteral(dataset.match(quad.subject, t.namedNode(`${rdfs}label`)))?.value.trim() 
-          ?? selectUserLiteral(dataset.match(quad.subject, t.namedNode(`${dcterms}title`)))?.value.trim() 
+          selectUserLiteral(dataset.match(quad.subject, rdfsLabel))?.value.trim() 
+          ?? selectUserLiteral(dataset.match(quad.subject, dctermsTitle))?.value.trim() 
           ?? ''
         ),
         description = (
-          selectUserLiteral(dataset.match(quad.subject, t.namedNode(`${rdfs}comment`)))?.value.trim() 
-          ?? selectUserLiteral(dataset.match(quad.subject, t.namedNode(`${dcterms}description`)))?.value.trim() 
-          ?? selectUserLiteral(dataset.match(quad.subject, t.namedNode(`${skos}definition`)))?.value.trim() 
+          selectUserLiteral(dataset.match(quad.subject, rdfsComment))?.value.trim() 
+          ?? selectUserLiteral(dataset.match(quad.subject, dctermsDescription))?.value.trim() 
+          ?? selectUserLiteral(dataset.match(quad.subject, skosDefinition))?.value.trim() 
           ?? ''
         );
         vm.push({iri: anIri, label, description});
@@ -53,7 +93,7 @@ function readRdfsOntology(dataset, meta) {
   );
 
   // predicates: domains and ranges
-  for (const quad of predicatesDs) {
+  for (const quad of propertiesDs) {
     const 
     iri = quad.subject.value,
     vm  = viewModel.predicates.find(e => e.iri === iri);
@@ -61,11 +101,11 @@ function readRdfsOntology(dataset, meta) {
     vm.domain = [];
     vm.range  = [];
 
-    for (const q of dataset.match(quad.subject, t.namedNode(`${rdfs}domain`))) {
+    for (const q of dataset.match(quad.subject, rdfsDomain)) {
       vm.domain.push(q.object.value);
     }
 
-    for (const q of dataset.match(quad.subject, t.namedNode(`${rdfs}range`))) {
+    for (const q of dataset.match(quad.subject, rdfsRange)) {
       vm.range.push(q.object.value);
     }
     
