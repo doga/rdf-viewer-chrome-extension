@@ -501,6 +501,10 @@ function showOwlOntology(viewModel) {
       badge    : document.querySelector('.ontology-section:nth-child(5) .badge'),
       tableBody: document.querySelector('.ontology-section:nth-child(5) .entity-table tbody'),
     },
+    datatypes: {
+      badge    : document.querySelector('.ontology-section:nth-child(6) .badge'),
+      tableBody: document.querySelector('.ontology-section:nth-child(6) .entity-table tbody'),
+    },
   };
   ui.vann.all.classList.remove('hide');
   ui.title.innerText                    = viewModel.title ?? 'An RDF Ontology';
@@ -511,6 +515,7 @@ function showOwlOntology(viewModel) {
   ui.classes.badge.innerText            = Object.entries(viewModel.classes).length;
   ui.objectProperties.badge.innerText   = Object.entries(viewModel.objectProperties).length;
   ui.datatypeProperties.badge.innerText = Object.entries(viewModel.datatypeProperties).length;
+  ui.datatypes.badge.innerText          = Object.entries(viewModel.datatypes).length;
 
   // console.debug('ui', ui);
 
@@ -537,8 +542,8 @@ function showOwlOntology(viewModel) {
 
 
   // display classes, predicates and datatypes
-  const uis = [ui.classes, ui.objectProperties, ui.datatypeProperties];
-  [viewModel.classes, viewModel.objectProperties, viewModel.datatypeProperties].forEach(
+  const uis = [ui.classes, ui.objectProperties, ui.datatypeProperties, ui.datatypes];
+  [viewModel.classes, viewModel.objectProperties, viewModel.datatypeProperties, viewModel.datatypes].forEach(
     definitions => {
       const currentUi = uis.shift();
       for (const def of definitions) {
@@ -857,10 +862,22 @@ function emptyOwlOntologyPage() {
       tr: 'Veri türü yüklemleri',
     },
     datatypePropertyIri: {
-      en: 'Datatype / IRI',
+      en: 'Datatype property / IRI',
       fr: 'Propriété - type de données / IRI',
       de: 'Datenart-Eigenschaft / IRI',
       tr: 'Veri türü yüklemi / IRI',
+    },
+    datatypes: {
+      en: 'Datatypes',
+      fr: 'Types de données',
+      de: 'Datenarte',
+      tr: 'Veri türleri',
+    },
+    datatypeIri: {
+      en: 'Datatype / IRI',
+      fr: 'Type de données / IRI',
+      de: 'Datenart / IRI',
+      tr: 'Veri türü / IRI',
     },
     viewRaw: {
       en: 'View raw',
@@ -935,7 +952,7 @@ function emptyOwlOntologyPage() {
         </table>
       </div>
 
-      <!-- Predicates Section -->
+      <!-- Object Properties Section -->
         <div class="ontology-section">
           <h2>${l10n.objectProperties[selectedLang]} <span class="badge"></span></h2>
           <table class="entity-table">
@@ -956,12 +973,33 @@ function emptyOwlOntologyPage() {
           </table>
         </div>
 
-      <!-- Datatypes Section -->
+      <!-- Datatype Properties Section -->
         <div class="ontology-section">
           <h2>${l10n.datatypeProperties[selectedLang]} <span class="badge"></span></h2>
           <table class="entity-table">
             <thead>
               <tr><th>${l10n.datatypePropertyIri[selectedLang]}</th><th>Description</th></tr>
+            </thead>
+            <tbody>
+              <!--
+                <tr>
+                  <td>
+                    <strong></strong><br/>
+                    <span class="entity-iri"></span>
+                  </td>
+                  <td></td>
+                </tr>
+              -->
+            </tbody>
+          </table>
+        </div>
+
+      <!-- Datatype Section -->
+        <div class="ontology-section">
+          <h2>${l10n.datatypes[selectedLang]} <span class="badge"></span></h2>
+          <table class="entity-table">
+            <thead>
+              <tr><th>${l10n.datatypeIri[selectedLang]}</th><th>Description</th></tr>
             </thead>
             <tbody>
               <!--

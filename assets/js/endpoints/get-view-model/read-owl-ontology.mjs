@@ -43,6 +43,7 @@ function readOwlOntology(dataset, meta) {
   classesDs            = dataset.match(null, rdfType, owlClass),
   objectPropertiesDs   = dataset.match(null, rdfType, owlObjectProperty),
   datatypePropertiesDs = dataset.match(null, rdfType, owlDatatypeProperty),
+  datatypesDs          = dataset.match(null, rdfType, rdfsDatatype),
   subclassesDs         = dataset.match(null, rdfsSubClassOf),
   subpropertiesDs      = dataset.match(null, rdfsSubPropertyOf),
   viewModel            = meta;
@@ -50,6 +51,7 @@ function readOwlOntology(dataset, meta) {
   viewModel.classes            = [];
   viewModel.objectProperties   = [];
   viewModel.datatypeProperties = [];
+  viewModel.datatypes          = [];
 
   // merge subclassesDs with classesDs
   for (const quad of subclassesDs) {
@@ -88,8 +90,8 @@ function readOwlOntology(dataset, meta) {
   }
 
   // labels and descriptions
-  let vms = [viewModel.classes, viewModel.objectProperties, viewModel.datatypeProperties];
-  [classesDs, objectPropertiesDs, datatypePropertiesDs].forEach(
+  let vms = [viewModel.classes, viewModel.objectProperties, viewModel.datatypeProperties, viewModel.datatypes];
+  [classesDs, objectPropertiesDs, datatypePropertiesDs, datatypesDs].forEach(
     ds => {
       const vm = vms.shift();
       for (const quad of ds) {
