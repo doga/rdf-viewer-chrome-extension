@@ -28,7 +28,7 @@ rdfsRange          = t.namedNode(`${rdfs}range`);
  * @async
  */
 function readRdfsOntology(dataset, meta) {
-  // console.debug(`rdfs ontology`);
+  console.debug(`rdfs ontology`);
   const
   /** 
    * @type {Object} RDF dataset compliant with the rdf.js.org specification.

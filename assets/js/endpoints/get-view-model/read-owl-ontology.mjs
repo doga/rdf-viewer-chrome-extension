@@ -34,7 +34,7 @@ iriOwlClass = iri`${owl}Class`;
  * @async
  */
 function readOwlOntology(dataset, meta) {
-  // console.debug(`owl ontology`);
+  console.debug(`owl ontology`);
   const
   /** 
    * @type {Object} RDF dataset compliant with the rdf.js.org specification.
@@ -62,6 +62,10 @@ function readOwlOntology(dataset, meta) {
     );
   }
 
+  // for (const quad of datatypePropertiesDs) {
+  //   console.debug(`datatype property`, quad.subject.value);
+  // }
+
   // update objectPropertiesDs and datatypePropertiesDs to include subpropertiesDs terms
   let updated = true;
   let quadToRemove = null;
@@ -70,18 +74,30 @@ function readOwlOntology(dataset, meta) {
     quadToRemove = null;
     for (const quad of subpropertiesDs) {
       const {subject: subpropertyId, object: parentPropertyId} = quad;
+      // console.debug(`\nsubproperty`, subpropertyId.value);
+      // console.debug(`parent property`, parentPropertyId.value);
+
       // is subproperty an object property?
       if (objectPropertiesDs.has(t.quad(parentPropertyId, rdfType, owlObjectProperty))) {
         objectPropertiesDs.add(t.quad(subpropertyId, rdfType, owlObjectProperty));
         quadToRemove = quad;
+        // console.debug(`✅ parent property is an object property`);
         break;
+      } else {
+        // console.debug(`parent property is not an object property`);
+      }
 
       // is subproperty a datatype property?
-      } else if (datatypePropertiesDs.has(t.quad(parentPropertyId, rdfType, owlObjectProperty))) {
+      if (datatypePropertiesDs.has(t.quad(parentPropertyId, rdfType, owlDatatypeProperty))) {
         datatypePropertiesDs.add(t.quad(subpropertyId, rdfType, owlDatatypeProperty));
         quadToRemove = quad;
+        // console.debug(`✅ parent property is a datatype property`);
         break;
+      } else {
+        // console.debug(`parent property is not a datatype property`);
       }
+
+      // console.debug(`❌ parent property not found`);
     }
     if (quadToRemove) {
       subpropertiesDs.delete(quadToRemove);
