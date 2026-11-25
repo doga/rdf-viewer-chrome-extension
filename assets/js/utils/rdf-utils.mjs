@@ -34,7 +34,9 @@ vann    = iri`http://purl.org/vocab/vann/`,
 dcterms = iri`http://purl.org/dc/terms/`,
 skos    = iri`http://www.w3.org/2004/02/skos/core#`,
 schema  = iri`https://schema.org/`,
-qrmm    = iri`https://vocab.qworum.net/qrmm.ttl#`;
+qrmm    = iri`https://vocab.qworum.net/qrmm.ttl#`,
+qrmd    = iri`https://vocab.qworum.net/qrmd.ttl#`,
+qrmsw   = iri`https://vocab.qworum.net/qrmsw.ttl#`;
 
 
 /**
@@ -402,6 +404,6 @@ const isTriple = isQuad;
 
 export { 
   parseRdf, transformToRdfStarDataset, t, selectUserLiteral, isPrefix,
-  owl, rdf, rdfs, vann, dcterms, skos, schema, qrmm,
+  owl, rdf, rdfs, vann, dcterms, skos, schema, qrmm, qrmd, qrmsw,
   isTerm, isNamedNode, isBlankNode, isLiteral, isDefaultGraph, isQuad, isTriple,
 };

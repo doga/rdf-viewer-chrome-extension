@@ -34,7 +34,7 @@ iriOwlClass = iri`${owl}Class`;
  * @async
  */
 function readOwlOntology(dataset, meta) {
-  console.debug(`owl ontology`);
+  // console.debug(`owl ontology`);
   const
   /** 
    * @type {Object} RDF dataset compliant with the rdf.js.org specification.

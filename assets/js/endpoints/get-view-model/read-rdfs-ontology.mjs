@@ -1,22 +1,22 @@
 import { 
   t, selectUserLiteral,
-  rdf, rdfs, dcterms, skos,
 } from "../../utils/rdf-utils.mjs";
 
-const
-rdfType            = t.namedNode(`${rdf}type`),
-rdfsClass          = t.namedNode(`${rdfs}Class`),
-rdfsSubClassOf     = t.namedNode(`${rdfs}subClassOf`),
-rdfProperty        = t.namedNode(`${rdf}Property`),
-rdfsSubPropertyOf  = t.namedNode(`${rdfs}subPropertyOf`),
-rdfsDatatype       = t.namedNode(`${rdfs}Datatype`),
-rdfsLabel          = t.namedNode(`${rdfs}label`),
-dctermsTitle       = t.namedNode(`${dcterms}title`),
-rdfsComment        = t.namedNode(`${rdfs}comment`),
-dctermsDescription = t.namedNode(`${dcterms}description`),
-skosDefinition     = t.namedNode(`${skos}definition`),
-rdfsDomain         = t.namedNode(`${rdfs}domain`),
-rdfsRange          = t.namedNode(`${rdfs}range`);
+import {
+  rdfType,
+  rdfsClass,
+  rdfsSubClassOf,
+  rdfProperty,
+  rdfsSubPropertyOf,
+  rdfsDatatype,
+  rdfsLabel,
+  dctermsTitle,
+  rdfsComment,
+  dctermsDescription,
+  skosDefinition,
+  rdfsDomain,
+  rdfsRange,
+} from '../../utils/rdf-constants.mjs'
 
 
 /**
